@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var version = '1.1.0';
+var version = '1.1.1';
 
 var toString = Object.prototype.toString;
 
@@ -15,8 +15,6 @@ var isArray = (
 var Object_is = Object.is;
 
 var INFINITY = 1/0;
-
-var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 
 var UNDEFINED = void 0;
 
@@ -70,6 +68,190 @@ var create = Object.create || (
 );
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+var propertyIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+var MAX_ARRAY_LENGTH =       4294967295;// 0x00000000FFFFFFFF // 0b00000000000000000000011111111111111111111111111111111 // 0o0000000000037777777777 // 2**32-1
+var LIKE_ARRAY_INDEX = /^(?:0|[1-4]\d{0,9}|[5-9]\d{0,8})$/;
+function isArrayIndex (key) {
+	return LIKE_ARRAY_INDEX.test(key) && key<MAX_ARRAY_LENGTH;
+}
+//function notThisRealm_and_isBuiltInArrayConstructorOfItsRealm (originalArray_constructor) { }
+var TheUndefinedType = 1;
+var TheNullType = 2;
+var TheBooleanType = 3;
+var TheStringType = 4;
+var TheSymbolType = 5;
+var TheNumberType = 6;
+var TheObjectType = 7;
+var TheBigIntType = 0;
+function Type (argument) {
+	switch ( typeof argument ) {
+		case 'function':
+			return TheObjectType;
+		case 'object':
+			return argument ? TheObjectType : TheNullType;// null
+		case 'undefined':
+			return argument===UNDEFINED ? TheUndefinedType : TheObjectType;// document.all
+		case 'boolean':
+			return TheBooleanType;
+		case 'string':
+			return TheStringType;
+		case 'symbol':
+			return TheSymbolType;
+		case 'number':
+			return TheNumberType;
+		case 'bigint':
+			return TheBigIntType;
+		default:
+			return TheObjectType;// unknown date ...
+	}
+}
+
+var getOwnPropertyNames = (
+	/*! j-globals: Object.getOwnPropertyNames (polyfill) */
+	/*#__PURE__*/ function () {
+		
+		var Object_getOwnPropertyNames = Object.getOwnPropertyNames;
+		if ( Object_getOwnPropertyNames ) {
+			try {
+				Object_getOwnPropertyNames(0);
+				return Object_getOwnPropertyNames;
+			}
+			catch (error) { }
+			return function getOwnPropertyNames (object) {
+				return Object_getOwnPropertyNames(object==null ? object : Object(object));
+			};
+		}
+		
+		var string_noIndex = !'_'.hasOwnProperty(0);
+		
+		if ( !{ 'toString': null }.propertyIsEnumerable('toString') ) {
+			var hasNotEnumOwnButNotNativePrototypeBug = function hasNotEnumOwnButNotNativePrototypeBug (object, name, names) {
+				for ( var index = names.length; index--; ) {
+					if ( names[index]==='name' ) { return false; }
+				}
+				return true;
+			};
+		}
+		
+		function __PURE__ (object) {
+			
+			if ( object==null ) { throw TypeError('Cannot convert undefined or null to object'); }
+			
+			var length,
+				index = 0,
+				name,
+				names = [];
+			
+			switch ( typeof object ) {
+				
+				case 'object':
+					if ( hasOwnProperty.call(object, 'length') && !propertyIsEnumerable.call(object, 'length') ) {
+						if ( toString.call(object)==='[object Array]' ) {
+							for ( name in object ) { if ( hasOwnProperty.call(object, name) && isArrayIndex(name) ) { names[index++] = name; } }
+						}
+						else {
+							if ( string_noIndex && toString.call(object)==='[object String]' ) { throw TypeError('stringObject\'s index keys have bug in ES3'); }
+							for ( length = object.length; index<length; ++index ) { if ( hasOwnProperty.call(object, index) ) { names[index] = ''+index; } }
+							for ( name in object ) { if ( hasOwnProperty.call(object, name) && isArrayIndex(name) && name>=length ) { names[index++] = name; } }
+							if ( hasOwnProperty.call(object, 'callee') && !propertyIsEnumerable.call(object, 'callee') ) { names[index++] = 'callee'; }
+						}
+						names[index++] = 'length';
+						for ( name in object ) { if ( hasOwnProperty.call(object, name) && !isArrayIndex(name) ) { names[index++] = name; } }
+					}
+					else {
+						for ( name in object ) { if ( hasOwnProperty.call(object, name) ) { names[index++] = name; } }
+					}
+					break;
+				
+				case 'function':
+					for ( name in object ) { if ( hasOwnProperty.call(object, name) && isArrayIndex(name) ) { names[index++] = name; } }
+					if ( hasOwnProperty.call(object, 'prototype') && !propertyIsEnumerable.call(object, 'prototype') ) { names[index++] = 'prototype'; }
+					if ( hasOwnProperty.call(object, 'caller') && !propertyIsEnumerable.call(object, 'caller') ) { names[index++] = 'caller'; }
+					if ( hasOwnProperty.call(object, 'arguments') && !propertyIsEnumerable.call(object, 'arguments') ) { names[index++] = 'arguments'; }
+					if ( hasOwnProperty.call(object, 'length') && !propertyIsEnumerable.call(object, 'length') ) { names[index++] = 'length'; }
+					for ( name in object ) { if ( hasOwnProperty.call(object, name) && !isArrayIndex(name) ) { names[index++] = name; } }
+					break;
+				
+				case 'string':
+					throw TypeError('string[index] keys have bug in ES3');
+				//	for ( length = object.length; index<length; ++index ) { names[index] = ''+index; }
+				//	return names;
+				default:
+					for ( name in object = Object(object) ) { if ( hasOwnProperty.call(object, name) ) { names[index++] = name; } }
+					break;
+			}
+			
+			if ( hasNotEnumOwnButNotNativePrototypeBug ) {
+				if ( hasNotEnumOwnButNotNativePrototypeBug(object, 'toString', names) ) { names[index++] = 'toString'; }
+				if ( hasNotEnumOwnButNotNativePrototypeBug(object, 'toLocaleString', names) ) { names[index++] = 'toLocaleString'; }
+				if ( hasNotEnumOwnButNotNativePrototypeBug(object, 'valueOf', names) ) { names[index++] = 'valueOf'; }
+				if ( hasNotEnumOwnButNotNativePrototypeBug(object, 'hasOwnProperty', names) ) { names[index++] = 'hasOwnProperty'; }
+				if ( hasNotEnumOwnButNotNativePrototypeBug(object, 'isPrototypeOf', names) ) { names[index++] = 'isPrototypeOf'; }
+				if ( hasNotEnumOwnButNotNativePrototypeBug(object, 'propertyIsEnumerable', names) ) { names[index++] = 'propertyIsEnumerable'; }
+				if ( hasNotEnumOwnButNotNativePrototypeBug(object, 'constructor', names) ) { names[index] = 'constructor'; }
+			}
+			
+			return names;
+			
+		}
+		
+		return function getOwnPropertyNames (object) {
+			return /*#__PURE__*/ __PURE__(object);
+		};
+		
+	}()
+	/*¡ j-globals: Object.getOwnPropertyNames (polyfill) */
+);
+
+var push = Array.prototype.push;
+
+var ownKeys = typeof Reflect==='object' ? Reflect.ownKeys : (
+	/*! j-globals: Reflect.ownKeys (polyfill) */
+	/*#__PURE__*/ function () {
+		
+		var __PURE__;
+		
+		var Object_getOwnPropertySymbols = Object.getOwnPropertySymbols;
+		
+		var Object_getOwnPropertyNames = Object.getOwnPropertyNames;
+		if ( Object_getOwnPropertyNames ) {
+			try { Object_getOwnPropertyNames(0); }
+			catch (error) {
+				if ( Object_getOwnPropertySymbols ) {
+					__PURE__ = function ownKeys (object) {
+						var keys = Object_getOwnPropertyNames(object);
+						push.apply(keys, Object_getOwnPropertySymbols);
+						return keys;
+					};
+				}
+				else { return Object_getOwnPropertyNames; }
+			}
+		}
+		else { Object_getOwnPropertyNames = getOwnPropertyNames; }
+		
+		if ( !__PURE__ ) {
+			__PURE__ = Object_getOwnPropertySymbols
+				? function ownKeys (object) {
+					if ( Type(object)!==TheObjectType ) { throw TypeError('Reflect.ownKeys called on non-object'); }
+					var keys = Object_getOwnPropertyNames(object);
+					push.apply(keys, Object_getOwnPropertySymbols);
+					return keys;
+				}
+				: function ownKeys (object) {
+					if ( Type(object)!==TheObjectType ) { throw TypeError('Reflect.ownKeys called on non-object'); }
+					return Object_getOwnPropertyNames(object);
+				};
+		}
+		
+		return function ownKeys (object) {
+			return /*#__PURE__*/ __PURE__(object);
+		};
+		
+	}()
+	/*¡ j-globals: Reflect.ownKeys (polyfill) */
+);
 
 var Function_prototype_apply = Function.prototype.apply;
 
@@ -142,32 +324,27 @@ var O = Object_is
 var _O = Object_is
     ? function _O(value) { return Object_is(value, -0); }
     : function _O(value) { return value === 0 && 1 / value < 0; };
-var EMPTY = [];
 function ObjectValidator(type) {
-    var symbolKeys = getOwnPropertySymbols ? getOwnPropertySymbols(type).reverse() : EMPTY;
-    var length = symbolKeys.length;
+    var expectKeys = ownKeys(type).reverse();
+    var expectLength = expectKeys.length;
     var validators = create(null);
-    for (var stringKey in type) {
-        if (hasOwnProperty.call(type, stringKey)) {
-            validators[stringKey] = Validator(type[stringKey]);
-        }
-    }
-    for (var index = length; index;) {
-        var symbolKey = symbolKeys[--index];
-        validators[symbolKey] = Validator(type[symbolKey]);
+    for (var index = expectLength; index;) {
+        var key = expectKeys[--index];
+        validators[key] = Validator(type[key]);
     }
     return function object(value) {
-        if (typeof value !== 'object' || !value || isArray(value)) {
+        if ( /*typeof value!=='object' || !value || */isArray(value)) {
             return false;
         }
-        for (var stringKey in validators) {
-            if (!validators[stringKey](stringKey in value ? value[stringKey] : VOID)) {
+        var index = 0;
+        for (var keys = ownKeys(value), length = keys.length; index < length; ++index) {
+            if (!(keys[index] in validators)) {
                 return false;
             }
         }
-        for (var index = length; index;) {
-            var symbolKey = symbolKeys[--index];
-            if (!validators[symbolKey](symbolKey in value ? value[symbolKey] : VOID)) {
+        for (index = expectLength; index;) {
+            var key = expectKeys[--index];
+            if (!validators[key](key in value ? value[key] : VOID)) {
                 return false;
             }
         }
@@ -177,8 +354,8 @@ function ObjectValidator(type) {
 function ArrayValidator(type) {
     var length = type.length;
     var validators = [];
-    for (var index = length; index;) {
-        validators.push(Validator(type[--index]));
+    for (var index = 0; index < length; ++index) {
+        validators.push(Validator(type[index]));
     }
     return function array(value) {
         if (!isArray(value)) {
@@ -187,8 +364,8 @@ function ArrayValidator(type) {
         if (value.length !== length) {
             return false;
         }
-        for (var index = length; index;) {
-            if (!validators[--index](value[index])) {
+        for (var index = 0; index < length; ++index) {
+            if (!validators[index](value[index])) {
                 return false;
             }
         }

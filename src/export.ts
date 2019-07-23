@@ -4,9 +4,8 @@ export { version };
 import isArray from '.Array.isArray?=';
 import Object_is from '.Object.is';
 import INFINITY from '.Infinity';
-import getOwnPropertySymbols from '.Object.getOwnPropertySymbols';
 import create from '.Object.create?=';
-import hasOwnProperty from '.Object.prototype.hasOwnProperty';
+import ownKeys from '.Reflect.ownKeys?=';
 import apply from '.Reflect.apply?=';
 import TypeError from '.TypeError';
 import UNDEFINED from '.undefined';
@@ -41,26 +40,23 @@ var _O :Validator = Object_is
 	? function _O (value :any) :boolean { return Object_is(value, -0); }
 	: function _O (value :any) :boolean { return value===0 && 1/value<0; };
 
-var EMPTY :any = [];
 function ObjectValidator<T extends object> (type :T) :Validator {
-	var symbolKeys = getOwnPropertySymbols ? getOwnPropertySymbols(type).reverse() : EMPTY as ( symbol & keyof T )[];
-	var length :number = symbolKeys.length;
+	var expectKeys = ownKeys(type).reverse();
+	var expectLength :number = expectKeys.length;
 	var validators :{ [key in keyof T] :Validator } = create(null);
-	for ( var stringKey in type ) {
-		if ( hasOwnProperty.call(type, stringKey) ) { validators[stringKey] = Validator(type[stringKey]); }
-	}
-	for ( var index :number = length; index; ) {
-		var symbolKey = symbolKeys[--index];
-		validators[symbolKey] = Validator(type[symbolKey]);
+	for ( var index :number = expectLength; index; ) {
+		var key = expectKeys[--index];
+		validators[key] = Validator(type[key]);
 	}
 	return function object (value :any) :boolean {
-		if ( typeof value!=='object' || !value || isArray(value) ) { return false; }
-		for ( var stringKey in validators ) {
-			if ( !validators[stringKey](stringKey in value ? value[stringKey] : VOID) ) { return false; }
+		if ( /*typeof value!=='object' || !value || */isArray(value) ) { return false; }
+		var index :number = 0;
+		for ( var keys = ownKeys(value), length :number = keys.length; index<length; ++index ) {
+			if ( !( keys[index] in validators ) ) { return false; }
 		}
-		for ( var index :number = length; index; ) {
-			var symbolKey = symbolKeys[--index];
-			if ( !validators[symbolKey](symbolKey in value ? value[symbolKey] : VOID) ) { return false; }
+		for ( index = expectLength; index; ) {
+			var key = expectKeys[--index];
+			if ( !validators[key](key in value ? value[key] : VOID) ) { return false; }
 		}
 		return true;
 	};
@@ -69,12 +65,12 @@ function ObjectValidator<T extends object> (type :T) :Validator {
 function ArrayValidator (type :any[]) :Validator {
 	var length :number = type.length;
 	var validators :Validator[] = [];
-	for ( var index :number = length; index; ) { validators.push(Validator(type[--index])); }
+	for ( var index :number = 0; index<length; ++index ) { validators.push(Validator(type[index])); }
 	return function array (value :any) :boolean {
 		if ( !isArray(value) ) { return false; }
 		if ( value.length!==length ) { return false; }
-		for ( var index :number = length; index; ) {
-			if ( !validators[--index](value[index]) ) { return false; }
+		for ( var index :number = 0; index<length; ++index ) {
+			if ( !validators[index](value[index]) ) { return false; }
 		}
 		return true;
 	};

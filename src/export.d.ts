@@ -6,7 +6,7 @@ export function and (...types :any[]) :Validator;
 export function or (...types :any[]) :Validator;
 
 export function optional (type :any) :Validator;
-export { VOID as void }; declare function VOID () :void;
+export { VOID as void }; declare function VOID (value :any) :boolean;
 
 export function every (type :any) :Validator;
 

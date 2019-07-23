@@ -2,7 +2,7 @@ export as namespace Validator;
 export = exports;
 declare const exports :Readonly<{
 	
-	version :'1.0.0',
+	version :'1.1.0',
 	
 	(type :any) :Validator,
 	Validator (type :any) :Validator,
@@ -11,7 +11,7 @@ declare const exports :Readonly<{
 	or (...types :any[]) :Validator,
 	
 	optional (type :any) :Validator,
-	void () :void,
+	void (value :any) :boolean,
 	
 	every (type :any) :Validator,
 	

@@ -2,14 +2,14 @@
  * 模块名称：j-validator
  * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
    　　　　　API validating util. Belong to "Plan J".
- * 模块版本：1.0.0
+ * 模块版本：1.1.0
  * 许可条款：LGPL-3.0
  * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
  * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
  * 项目主页：https://GitHub.com/LongTengDao/j-validator/
  */
 
-var version = '1.0.0';
+var version = '1.1.0';
 
 var toString = Object.prototype.toString;
 
@@ -90,13 +90,13 @@ var apply = typeof Reflect==='object' ? Reflect.apply : (
 	/*¡ j-globals: Reflect.apply (polyfill) */
 );
 
-var freeze = Object.freeze;
-
 var assign = Object.assign;
 
 var toStringTag = typeof Symbol!=='undefined' ? Symbol.toStringTag : undefined;
 
 var defineProperty = Object.defineProperty;
+
+var freeze = Object.freeze;
 
 var seal = Object.seal;
 
@@ -129,7 +129,7 @@ var Default = (
 	/*¡ j-globals: default (internal) */
 );
 
-var VOID = freeze ? /*#__PURE__*/ freeze(function VOID() { }) : function VOID() { };
+function VOID(value) { return value === VOID; }
 function any(value) { return value !== VOID; }
 function never(value) { return false; }
 function bigint(value) { return typeof value === 'bigint'; }
@@ -142,21 +142,15 @@ function NULL(value) { return value === null; }
 function TRUE(value) { return value === true; }
 function FALSE(value) { return value === false; }
 function NaN(value) { return value !== value; }
-var Infinity = 
-/*#__PURE__*/
-function () {
-    function Infinity(value) { return value === INFINITY; }
-    Infinity.valueOf = function () { return INFINITY; };
-    freeze && freeze(Infinity);
-    return Infinity;
-}();
+function Infinity(value) { return value === INFINITY; }
+Infinity.valueOf = function () { return INFINITY; };
 function _Infinity(value) { return value === -INFINITY; }
 var O = Object_is
-    ? function isZero(value) { return Object_is(value, 0); }
-    : function isZero(value) { return value === 0 && 1 / value > 0; };
+    ? function O(value) { return Object_is(value, 0); }
+    : function O(value) { return value === 0 && 1 / value > 0; };
 var _O = Object_is
-    ? function isZero(value) { return Object_is(value, -0); }
-    : function isZero(value) { return value === 0 && 1 / value < 0; };
+    ? function _O(value) { return Object_is(value, -0); }
+    : function _O(value) { return value === 0 && 1 / value < 0; };
 var EMPTY = [];
 function ObjectValidator(type) {
     var symbolKeys = getOwnPropertySymbols ? getOwnPropertySymbols(type).reverse() : EMPTY;

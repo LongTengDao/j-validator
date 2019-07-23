@@ -10,7 +10,7 @@ declare const exports :Readonly<{
 	or (...types :any[]) :Validator,
 	
 	optional (type :any) :Validator,
-	void () :void,
+	void (value :any) :boolean,
 	
 	every (type :any) :Validator,
 	

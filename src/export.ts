@@ -10,9 +10,8 @@ import hasOwnProperty from '.Object.prototype.hasOwnProperty';
 import apply from '.Reflect.apply?=';
 import TypeError from '.TypeError';
 import UNDEFINED from '.undefined';
-import freeze from '.Object.freeze';
 
-var VOID = freeze ? /*#__PURE__*/ freeze(function VOID () {}) : function VOID () {};
+function VOID (value :any) :boolean { return value===VOID; }
 export { VOID as void };
 
 export function any (value :any) :boolean { return value!==VOID; }
@@ -31,22 +30,16 @@ function FALSE (value :any) :boolean { return value===false; }
 
 export function NaN (value :any) :boolean { return value!==value; }
 
-export var Infinity :Validator =
-	/*#__PURE__*/
-	function () :Validator {
-		function Infinity (value :any) :boolean { return value===INFINITY; }
-		Infinity.valueOf = function (this :typeof Infinity) :number { return INFINITY; };
-		freeze && freeze(Infinity);
-		return Infinity;
-	}();
+export function Infinity (value :any) :boolean { return value===INFINITY; }
+Infinity.valueOf = function (this :typeof Infinity) :number { return INFINITY; };
 function _Infinity (value :any) :boolean { return value=== -INFINITY; }
 
 var O :Validator = Object_is
-	? function isZero (value :any) :boolean { return Object_is(value, 0); }
-	: function isZero (value :any) :boolean { return value===0 && 1/value>0; };
+	? function O (value :any) :boolean { return Object_is(value, 0); }
+	: function O (value :any) :boolean { return value===0 && 1/value>0; };
 var _O :Validator = Object_is
-	? function isZero (value :any) :boolean { return Object_is(value, -0); }
-	: function isZero (value :any) :boolean { return value===0 && 1/value<0; };
+	? function _O (value :any) :boolean { return Object_is(value, -0); }
+	: function _O (value :any) :boolean { return value===0 && 1/value<0; };
 
 var EMPTY :any = [];
 function ObjectValidator<T extends object> (type :T) :Validator {
@@ -194,4 +187,4 @@ export default Default(Validator, {
 	version: version
 });
 
-export type Validator = (value :any) => boolean;
+type Validator = (value :any) => boolean;

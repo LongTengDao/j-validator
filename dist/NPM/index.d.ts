@@ -1,18 +1,26 @@
 export = exports;
 declare const exports :Readonly<{
 	
-	version :'1.1.1',
+	version :'2.0.0',
 	
 	(type :any) :Validator,
+	<T> (type :any) :TypedValidator<T>,
 	Validator (type :any) :Validator,
+	Validator<T> (type :any) :TypedValidator<T>,
 	
-	and (...types :any[]) :Validator,
 	or (...types :any[]) :Validator,
+	or<T> (...types :any[]) :TypedValidator<T>,
+	and (...types :any[]) :Validator,
+	and<T> (...types :any[]) :TypedValidator<T>,
 	
+	strict (type :object) :Validator,
+	strict<T extends object> (type :object) :TypedValidator<T>,
 	optional (type :any) :Validator,
+	optional<T> (type :any) :TypedValidator<T>,
 	void (value :any) :boolean,
 	
 	every (type :any) :Validator,
+	every<T> (type :any) :TypedValidator<T[]>,
 	
 	bigint (value :any) :value is bigint,
 	symbol (value :any) :value is symbol,
@@ -34,3 +42,4 @@ declare const exports :Readonly<{
 }>;
 
 type Validator = (value :any) => boolean;
+type TypedValidator<T> = (value :any) => value is T;

@@ -2,14 +2,14 @@
  * 模块名称：j-validator
  * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
    　　　　　API validating util. Belong to "Plan J".
- * 模块版本：1.1.1
+ * 模块版本：2.0.0
  * 许可条款：LGPL-3.0
  * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
  * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
  * 项目主页：https://GitHub.com/LongTengDao/j-validator/
  */
 
-var version = '1.1.1';
+var version = '2.0.0';
 
 var toString = Object.prototype.toString;
 
@@ -333,7 +333,10 @@ var O = Object_is
 var _O = Object_is
     ? function _O(value) { return Object_is(value, -0); }
     : function _O(value) { return value === 0 && 1 / value < 0; };
-function ObjectValidator(type) {
+function ObjectValidator(type, strict) {
+    if (strict && (typeof type !== 'object' || !type || isArray(type))) {
+        throw TypeError('Validator.strict(type!object)');
+    }
     var expectKeys = ownKeys(type).reverse();
     var expectLength = expectKeys.length;
     var validators = create(null);
@@ -341,94 +344,88 @@ function ObjectValidator(type) {
         var key = expectKeys[--index];
         validators[key] = Validator(type[key]);
     }
-    return function object(value) {
-        if ( /*typeof value!=='object' || !value || */isArray(value)) {
-            return false;
-        }
-        var index = 0;
-        for (var keys = ownKeys(value), length = keys.length; index < length; ++index) {
-            if (!(keys[index] in validators)) {
+    return strict
+        ? function object(value) {
+            if (typeof value !== 'object' || !value || isArray(value)) {
                 return false;
             }
+            var index = 0;
+            for (var keys = ownKeys(value), length = keys.length; index < length; ++index) {
+                if (!(keys[index] in validators)) {
+                    return false;
+                }
+            }
+            for (index = expectLength; index;) {
+                var key = expectKeys[--index];
+                if (!validators[key](key in value ? value[key] : VOID)) {
+                    return false;
+                }
+            }
+            return true;
         }
-        for (index = expectLength; index;) {
-            var key = expectKeys[--index];
-            if (!validators[key](key in value ? value[key] : VOID)) {
+        : function object(value) {
+            if (typeof value !== 'object' || !value || isArray(value)) {
                 return false;
             }
-        }
-        return true;
-    };
+            for (var index = expectLength; index;) {
+                var key = expectKeys[--index];
+                if (!validators[key](key in value ? value[key] : VOID)) {
+                    return false;
+                }
+            }
+            return true;
+        };
 }
-function ArrayValidator(type) {
+function ArrayValidator(type, like) {
     var length = type.length;
     var validators = [];
     for (var index = 0; index < length; ++index) {
         validators.push(Validator(type[index]));
     }
-    return function array(value) {
-        if (!isArray(value)) {
-            return false;
-        }
-        if (value.length !== length) {
-            return false;
-        }
-        for (var index = 0; index < length; ++index) {
-            if (!validators[index](value[index])) {
+    return like
+        ? function arrayLike(value) {
+            if (value.length !== length) {
                 return false;
             }
+            for (var index = 0; index < length; ++index) {
+                if (!validators[index](value[index])) {
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
-    };
-}
-function ArgumentsValidator(type) {
-    var length = type.length;
-    var validators = [];
-    for (var index = length; index;) {
-        validators.push(Validator(type[--index]));
-    }
-    return function ARGUMENTS(value) {
-        if (value.length !== length) {
-            return false;
-        }
-        for (var index = length; index;) {
-            if (!validators[--index](value[index])) {
+        : function array(value) {
+            if (!isArray(value)) {
                 return false;
             }
-        }
-        return true;
-    };
+            if (value.length !== length) {
+                return false;
+            }
+            for (var index = 0; index < length; ++index) {
+                if (!validators[index](value[index])) {
+                    return false;
+                }
+            }
+            return true;
+        };
 }
 function Validator(type) {
     return typeof type === 'function' ? type :
         undefined$1(type) ? undefined$1 :
             TRUE(type) ? TRUE : FALSE(type) ? FALSE :
                 NULL(type) ? NULL :
-                    typeof type === 'object' ? /*#__PURE__*/ (isArray(type) ? ArrayValidator : ObjectValidator)(type) :
+                    typeof type === 'object' ? /*#__PURE__*/ (isArray(type) ? ArrayValidator : ObjectValidator)(type, false) :
                         O(type) ? O : _O(type) ? _O :
                             NaN(type) ? NaN :
                                 /*#__PURE__*/ Infinity(type) ? Infinity : _Infinity(type) ? _Infinity :
                                     function validator(value) { return value === type; };
 }
+function strict(type) {
+    return /*#__PURE__*/ ObjectValidator(type, true);
+}
 function optional(type) {
     var validator = Validator(type);
     return function optionalValidator(value) { return value === VOID || validator(value); };
-}
-function and() {
-    var types = arguments.length === 1 && isArray(arguments[0]) ? arguments[0] : arguments;
-    var length = types.length;
-    var validators = [];
-    for (var index = 0; index < length; ++index) {
-        validators.push(Validator(types[index]));
-    }
-    return function or(value) {
-        for (var index = 0; index < length; ++index) {
-            if (!validators[index](value)) {
-                return false;
-            }
-        }
-        return true;
-    };
 }
 function or() {
     var types = arguments.length === 1 && isArray(arguments[0]) ? arguments[0] : arguments;
@@ -446,6 +443,22 @@ function or() {
         return false;
     };
 }
+function and() {
+    var types = arguments.length === 1 && isArray(arguments[0]) ? arguments[0] : arguments;
+    var length = types.length;
+    var validators = [];
+    for (var index = 0; index < length; ++index) {
+        validators.push(Validator(types[index]));
+    }
+    return function or(value) {
+        for (var index = 0; index < length; ++index) {
+            if (!validators[index](value)) {
+                return false;
+            }
+        }
+        return true;
+    };
+}
 function every(type) {
     var validator = Validator(type);
     return function array(value) {
@@ -460,26 +473,42 @@ function every(type) {
         return true;
     };
 }
+var comma_repeat = ''.repeat
+    ? function comma_repeat(count) { return ','.repeat(count); }
+    : function () {
+        var commas = [];
+        return function comma_repeat(count) {
+            commas.length = count + 1;
+            return commas.join(',');
+        };
+    }();
 function overload(types, callback) { return /*#__PURE__*/ Overloaded.apply(null, arguments); }
 function Overloaded(types, callback) {
     var validator = Validator(types);
     if (typeof callback !== 'function') {
-        throw TypeError();
+        throw TypeError('Validator.overload(,callback!function)');
     }
     var validators;
     var callbacks;
     var length = arguments.length;
+    var fallback;
+    if (length % 2) {
+        fallback = arguments[--length];
+        if (typeof fallback !== 'function') {
+            throw TypeError('Validator.overload(' + comma_repeat(length) + 'fallback!function)');
+        }
+    }
     if (length < 3) {
         length = 0;
     }
     else {
         validators = [];
         callbacks = [];
-        for (var index = 2; index < length;) {
-            validators.push(ArgumentsValidator(arguments[index++]));
-            var cb = arguments[index++];
+        for (var index = 2; index < length; ++index) {
+            validators.push(ArrayValidator(arguments[index], true));
+            var cb = arguments[++index];
             if (typeof cb !== 'function') {
-                throw TypeError();
+                throw TypeError('Validator.overload(' + comma_repeat(index) + 'callback!function)');
             }
             callbacks.push(cb);
         }
@@ -494,6 +523,9 @@ function Overloaded(types, callback) {
                 return apply(callbacks[index], this, arguments);
             }
         }
+        if (fallback) {
+            return apply(fallback, this, arguments);
+        }
         throw TypeError();
     };
 }
@@ -503,14 +535,14 @@ var _export = Default(Validator, {
     bigint: bigint, symbol: symbol, string: string, boolean: boolean, number: number,
     undefined: undefined$1, NaN: NaN, Infinity: Infinity,
     every: every,
-    'void': VOID, optional: optional,
+    'void': VOID, optional: optional, strict: strict,
     any: any, never: never,
     overload: overload,
     version: version
 });
 
 export default _export;
-export { Infinity, NaN, Validator, and, any, bigint, boolean, every, never, number, optional, or, overload, string, symbol, undefined$1 as undefined, version, VOID as void };
+export { Infinity, NaN, Validator, and, any, bigint, boolean, every, never, number, optional, or, overload, strict, string, symbol, undefined$1 as undefined, version, VOID as void };
 
 /*¡ j-validator */
 

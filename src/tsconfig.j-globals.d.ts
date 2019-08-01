@@ -1,7 +1,9 @@
 
+declare module '.Array' { export default Array; }
 declare module '.Array.isArray?=' { export default isArray;
 	function isArray (value :any) :value is any[] | readonly any[];
 }
+declare module '.Array.prototype' { export default Array.prototype; }
 declare module '.Array.prototype.push' { export default Array.prototype.push; }
 
 declare module '.Function.prototype.apply' { export default Function.prototype.apply; }
@@ -18,26 +20,18 @@ declare module '.Object.getOwnPropertyNames?=' { export default getOwnPropertyNa
 	function getOwnPropertyNames<T extends object> (object :T) :Extract<string, keyof T>[];
 }
 declare module '.Object.is' { export default Object.is; }
-declare module '.Object.prototype' { export default Object.prototype;
-	export { default as hasOwnProperty } from '.Object.prototype.hasOwnProperty';
-	export { default as isPrototypeOf } from '.Object.prototype.isPrototypeOf';
-	export { default as propertyIsEnumerable } from '.Object.prototype.propertyIsEnumerable';
-	export { default as toLocaleString } from '.Object.prototype.toLocaleString';
-	export { default as toString } from '.Object.prototype.toString';
-	export { default as valueOf } from '.Object.prototype.valueOf';
-}
+declare module '.Object.prototype' { export default Object.prototype; }
 declare module '.Object.prototype.hasOwnProperty' { export default Object.prototype.hasOwnProperty; }
-declare module '.Object.prototype.isPrototypeOf' { export default Object.prototype.isPrototypeOf; }
 declare module '.Object.prototype.propertyIsEnumerable' { export default Object.prototype.propertyIsEnumerable; }
-declare module '.Object.prototype.toLocaleString' { export default Object.prototype.toLocaleString; }
 declare module '.Object.prototype.toString' { export default Object.prototype.toString; }
-declare module '.Object.prototype.valueOf' { export default Object.prototype.valueOf; }
 declare module '.Object.seal' { export default Object.seal; }
 
 declare module '.Reflect.apply?=' { export default Reflect.apply; }
 declare module '.Reflect.ownKeys?=' { export default ownKeys;
 	function ownKeys<T extends object> (object :T) :Extract<string | symbol, keyof T>[];
 }
+
+declare module '.String.fromCharCode' { export default String.fromCharCode; }
 
 declare module '.Symbol.species?' { export default Symbol.species; }
 declare module '.Symbol.toStringTag?' { export default Symbol.toStringTag; }
@@ -53,6 +47,6 @@ declare module '.default?=' { export default Default;
 	type Newable = { new (...args :any[]) :any };
 }
 
-declare module '.native' { export default NATIVE; const NATIVE :never; }
+declare module '.native' { export default _; const _ :never; }
 
 declare module '.undefined' { export default undefined; }

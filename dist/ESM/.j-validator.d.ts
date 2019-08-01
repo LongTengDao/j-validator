@@ -1,4 +1,4 @@
-export const version :'2.0.0';
+export const version :'2.1.0';
 
 export function Validator (type :any) :Validator;
 export function Validator<T> (type :any) :TypedValidator<T>;

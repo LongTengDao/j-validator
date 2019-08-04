@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var version = '2.1.0';
+var version = '3.0.0';
 
 var toString = Object.prototype.toString;
 
@@ -11,8 +11,6 @@ var isArray = (
 	}
 	/*¡ j-globals: Array.isArray (polyfill) */
 );
-
-var Object_is = Object.is;
 
 var INFINITY = 1/0;
 
@@ -302,115 +300,167 @@ var Default = (
 	/*¡ j-globals: default (internal) */
 );
 
+var Object_is = ( Object                                      ).is;
+var _INFINITY = -INFINITY;
+
 function VOID (value     )          { return value===VOID; }
 
 function any (value     )          { return value!==VOID; }
 function never (value     )          { return false; }
 
 function bigint (value     )          { return typeof value==='bigint'; }
+function bigint_ (value     )          { return typeof value!=='bigint'; }
 function symbol (value     )          { return typeof value==='symbol'; }
+function symbol_ (value     )          { return typeof value!=='symbol'; }
 function string (value     )          { return typeof value==='string'; }
+function string_ (value     )          { return typeof value!=='string'; }
 function boolean (value     )          { return typeof value==='boolean'; }
+function boolean_ (value     )          { return typeof value!=='boolean'; }
 function number (value     )          { return typeof value==='number'; }
+function number_ (value     )          { return typeof value!=='number'; }
 function undefined$1 (value     )          { return value===UNDEFINED; }
+function undefined_ (value     )          { return value!==UNDEFINED; }
 
 function NULL (value     )          { return value===null; }
+function NULL_ (value     )          { return value!==null; }
 function TRUE (value     )          { return value===true; }
+function TRUE_ (value     )          { return value!==true; }
 function FALSE (value     )          { return value===false; }
-
-function NaN (value     )          { return value!==value; }
+function FALSE_ (value     )          { return value!==false; }
 
 function Infinity (value     )          { return value===INFINITY; }
 Infinity.valueOf = function (                     )         { return INFINITY; };
-function _Infinity (value     )          { return value=== -INFINITY; }
+function Infinity_ (value     )          { return value!==INFINITY; }
+function _Infinity (value     )          { return value===_INFINITY; }
+function _Infinity_ (value     )          { return value!==_INFINITY; }
+
+function NaN (value     )          { return value!==value; }
+function NaN_ (value     )          { return value===value; }
 
 var O            = Object_is
-	? function O (value     )          { return Object_is(value, 0); }
+	? function O (value     )          { return Object_is (value, 0); }
 	: function O (value     )          { return value===0 && 1/value>0; };
+var O_            = Object_is
+	? function O_ (value     )          { return !Object_is (value, 0); }
+	: function O_ (value     )          { return value!==0 || 1/value<0; };
 var _O            = Object_is
-	? function _O (value     )          { return Object_is(value, -0); }
+	? function _O (value     )          { return Object_is (value, -0); }
 	: function _O (value     )          { return value===0 && 1/value<0; };
+var _O_            = Object_is
+	? function _O_ (value     )          { return !Object_is (value, -0); }
+	: function _O_ (value     )          { return value!==0 || 1/value>0; };
 
-function ObjectValidator                   (type   , strict         )            {
-	if ( strict && ( typeof type!=='object' || !type || isArray(type) ) ) { throw TypeError('Validator.strict(type!object)'); }
+function ObjectValidator                   (type   , strict         , FALSE         )            {
+	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
 	var expectKeys = ownKeys(type).reverse();
 	var expectLength         = expectKeys.length;
 	var validators                                  = create(null);
 	for ( var index         = expectLength; index; ) {
 		var key = expectKeys[--index];
-		validators[key] = Validator(type[key]);
+		validators[key] = is(type[key]);
 	}
+	var TRUE          = !FALSE;
 	return strict
 		? function object (value     )          {
-			if ( typeof value!=='object' || !value || isArray(value) ) { return false; }
+			if ( typeof value!=='object' || !value || isArray(value) ) { return FALSE; }
 			var index         = 0;
 			for ( var keys = ownKeys(value), length         = keys.length; index<length; ++index ) {
-				if ( !( keys[index] in validators ) ) { return false; }
+				if ( !( keys[index] in validators ) ) { return FALSE; }
 			}
 			for ( index = expectLength; index; ) {
 				var key = expectKeys[--index];
-				if ( !validators[key](key in value ? value[key] : VOID) ) { return false; }
+				if ( !validators[key](key in value ? value[key] : VOID) ) { return FALSE; }
 			}
-			return true;
+			return TRUE;
 		}
 		: function object (value     )          {
-			if ( typeof value!=='object' || !value || isArray(value) ) { return false; }
+			if ( typeof value!=='object' || !value || isArray(value) ) { return FALSE; }
 			for ( var index         = expectLength; index; ) {
 				var key = expectKeys[--index];
-				if ( !validators[key](key in value ? value[key] : VOID) ) { return false; }
+				if ( !validators[key](key in value ? value[key] : VOID) ) { return FALSE; }
 			}
-			return true;
+			return TRUE;
 		};
 }
 
-function ArrayValidator (type       , like         )            {
+function ArrayValidator (type       , like         , FALSE         )            {
 	var length         = type.length;
 	var validators              = [];
-	for ( var index         = 0; index<length; ++index ) { validators.push(Validator(type[index])); }
+	for ( var index         = 0; index<length; ++index ) { validators.push(is(type[index])); }
+	var TRUE          = !FALSE;
 	return like
 		? function arrayLike (value     )          {
-			if ( value.length!==length ) { return false; }
+			if ( value.length!==length ) { return FALSE; }
 			for ( var index         = 0; index<length; ++index ) {
-				if ( !validators[index](value[index]) ) { return false; }
+				if ( !validators[index](value[index]) ) { return FALSE; }
 			}
-			return true;
+			return TRUE;
 		}
 		: function array (value     )          {
-			if ( !isArray(value) ) { return false; }
-			if ( value.length!==length ) { return false; }
+			if ( !isArray(value) ) { return FALSE; }
+			if ( value.length!==length ) { return FALSE; }
 			for ( var index         = 0; index<length; ++index ) {
-				if ( !validators[index](value[index]) ) { return false; }
+				if ( !validators[index](value[index]) ) { return FALSE; }
 			}
-			return true;
+			return TRUE;
 		};
 }
 
-function Validator (type     )            {
+function is (type     )            {
 	return typeof type==='function' ? type :
 		undefined$1(type) ? undefined$1 :
 			TRUE(type) ? TRUE : FALSE(type) ? FALSE :
 				NULL(type) ? NULL :
-					typeof type==='object' ? /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false) :
+					typeof type==='object' ? /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, false) :
 						O(type) ? O : _O(type) ? _O :
-							NaN(type) ? NaN :
-								/*#__PURE__*/ Infinity(type) ? Infinity : _Infinity(type) ? _Infinity :
-								function validator (value     )          { return value===type; };
+							type!==type ? NaN :
+								type===INFINITY ? Infinity : type===_INFINITY ? _Infinity :
+									function isType (value     )          { return value===type; };
+}
+function not (type     )            {
+	if ( typeof type==='function' ) {
+		switch ( type ) {
+			case bigint:
+				return bigint_;
+			case symbol:
+				return symbol_;
+			case string:
+				return string_;
+			case boolean:
+				return boolean_;
+			case number:
+				return number_;
+			case undefined$1:
+				return undefined_;
+			case Infinity:
+				return Infinity_;
+		}
+		return function notType (value     )          { return !type(value); };
+	}
+	return type===UNDEFINED ? undefined_ :
+		type===true ? TRUE_ : type===false ? FALSE_ :
+			type===null ? NULL_ :
+				typeof type==='object' ? /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, true) :
+					type===0 ? O_(type) ? _O_ : O_ :
+						type!==type ? NaN_ :
+							type===INFINITY ? Infinity_ : type===_INFINITY ? _Infinity_ :
+								function notType (value     )          { return value!==type; };
 }
 
-function strict (type        )            {
-	return /*#__PURE__*/ ObjectValidator(type, true);
+function strict (type        , not         )            {
+	return /*#__PURE__*/ ObjectValidator(type, true, not || false);
 }
 
 function optional (type     )            {
-	var validator            = Validator(type);
+	var validator            = is(type);
 	return function optionalValidator (value     )          { return value===VOID || validator(value); };
 }
 
-function or ()            {
-	var types = arguments.length===1 && isArray(arguments[0]) ? arguments[0] : arguments;
+function or (type     )            {
+	var types                                           = arguments.length===1 && isArray(type) ? type : arguments;
 	var length         = types.length;
 	var validators              = [];
-	for ( var index         = 0; index<length; ++index ) { validators.push(Validator(types[index])); }
+	for ( var index         = 0; index<length; ++index ) { validators.push(is(types[index])); }
 	return function or (value     )          {
 		for ( var index         = 0; index<length; ++index ) {
 			if ( validators[index](value) ) { return true; }
@@ -418,12 +468,12 @@ function or ()            {
 		return false;
 	};
 }
-function and ()            {
-	var types = arguments.length===1 && isArray(arguments[0]) ? arguments[0] : arguments;
+function and (type     )            {
+	var types                                           = arguments.length===1 && isArray(type) ? type : arguments;
 	var length         = types.length;
 	var validators              = [];
-	for ( var index         = 0; index<length; ++index ) { validators.push(Validator(types[index])); }
-	return function or (value     )          {
+	for ( var index         = 0; index<length; ++index ) { validators.push(is(types[index])); }
+	return function and (value     )          {
 		for ( var index         = 0; index<length; ++index ) {
 			if ( !validators[index](value) ) { return false; }
 		}
@@ -432,7 +482,7 @@ function and ()            {
 }
 
 function every (type     )            {
-	var validator            = Validator(type);
+	var validator            = is(type);
 	return function array (value     )          {
 		if ( !isArray(value) ) { return false; }
 		for ( var length         = value.length, index         = 0; index<length; ++index ) {
@@ -453,7 +503,7 @@ var comma_repeat                            = ''.repeat
 	}();
 function overload                                    (types       , callback   )    { return /*#__PURE__*/ Overloaded.apply(null, arguments       )     ; }
 function Overloaded                                    (types       , callback   )    {
-	var validator            = Validator(types);
+	var validator            = is(types);
 	if ( typeof callback!=='function' ) { throw TypeError('Validator.overload(,callback!function)'); }
 	var validators             ;
 	var callbacks     ;
@@ -468,7 +518,7 @@ function Overloaded                                    (types       , callback  
 		validators = [];
 		callbacks = [];
 		for ( var index         = 2; index<length; ++index ) {
-			validators.push(ArrayValidator(arguments[index], true));
+			validators.push(ArrayValidator(arguments[index], true, false));
 			var cb    = arguments[++index];
 			if ( typeof cb!=='function' ) { throw TypeError('Validator.overload('+comma_repeat(index)+'callback!function)'); }
 			callbacks.push(cb);
@@ -484,8 +534,8 @@ function Overloaded                                    (types       , callback  
 		throw TypeError();
 	}     ;
 }
-var _export = Default(Validator, {
-	Validator: Validator,
+var _export = Default({
+	is: is, not: not,
 	and: and, or: or,
 	bigint: bigint, symbol: symbol, string: string, boolean: boolean, number: number,
 	undefined: undefined$1, NaN: NaN, Infinity: Infinity,

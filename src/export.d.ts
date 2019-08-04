@@ -1,15 +1,18 @@
 export const version :string;
 
-export function Validator (type :any) :Validator;
-export function Validator<T> (type :any) :TypedValidator<T>;
+export function is (type :any) :Validator;
+export function is<T> (type :any) :TypedValidator<T>;
+export function not (type :any) :Validator;
+export function not<T> (type :any) :TypedValidator<Exclude<any, T>>;
 
 export function or (...types :any[]) :Validator;
 export function or<T> (...types :any[]) :TypedValidator<T>;
 export function and (...types :any[]) :Validator;
 export function and<T> (...types :any[]) :TypedValidator<T>;
 
-export function strict (type :object) :Validator;
-export function strict<T extends object> (type :object) :TypedValidator<T>;
+export function strict (type :object, not? :boolean) :Validator;
+export function strict<T extends object> (type :object, not? :false) :TypedValidator<T>;
+export function strict<T extends object> (type :object, not :true) :TypedValidator<Exclude<any, T>>;
 export function optional (type :any) :Validator;
 export function optional<T> (type :any) :TypedValidator<T>;
 export { VOID as void }; declare function VOID (value :any) :boolean;
@@ -24,8 +27,8 @@ export function boolean (value :any) :value is boolean;
 export function number (value :any) :value is number;
 
 export function undefined (value :any) :value is undefined;
-export function NaN (value :any) :boolean;
 export function Infinity (value :any) :boolean;
+export function NaN (value :any) :boolean;
 
 export function any (value :any) :boolean;
 export function never (value :any) :false;
@@ -33,9 +36,9 @@ export function never (value :any) :false;
 export function overload<T extends (...args :any[]) => any> (types :any[], callback :T, ...rest :( any[] | T )[]) :T;
 
 export default exports;
-declare const exports :Readonly<typeof Validator & {
+declare const exports :Readonly<{
 	version :typeof version,
-	Validator :typeof Validator,
+	is :typeof is,
 	or :typeof or,
 	and :typeof and,
 	strict :typeof strict,
@@ -48,8 +51,8 @@ declare const exports :Readonly<typeof Validator & {
 	boolean :typeof boolean,
 	number :typeof number,
 	undefined :typeof undefined,
-	NaN :typeof NaN,
 	Infinity :typeof Infinity,
+	NaN :typeof NaN,
 	any :typeof any,
 	never :typeof never,
 	overload :typeof overload,

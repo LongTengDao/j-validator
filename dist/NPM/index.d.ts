@@ -1,7 +1,7 @@
 export = exports;
 declare const exports :Readonly<{
 	
-	version :'3.0.0',
+	version :'3.1.0',
 	
 	is (type :any) :Validator,
 	is<T> (type :any) :TypedValidator<T>,

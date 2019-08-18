@@ -25,8 +25,8 @@ export function symbol (value :any) :boolean { return typeof value==='symbol'; }
 function symbol_ (value :any) :boolean { return typeof value!=='symbol'; }
 export function string (value :any) :boolean { return typeof value==='string'; }
 function string_ (value :any) :boolean { return typeof value!=='string'; }
-export function boolean (value :any) :boolean { return typeof value==='boolean'; }
-function boolean_ (value :any) :boolean { return typeof value!=='boolean'; }
+export function boolean (value :any) :boolean { return value===true || value===false; }
+function boolean_ (value :any) :boolean { return value!==true && value!==false; }
 export function number (value :any) :boolean { return typeof value==='number'; }
 function number_ (value :any) :boolean { return typeof value!=='number'; }
 export function undefined (value :any) :boolean { return value===UNDEFINED; }

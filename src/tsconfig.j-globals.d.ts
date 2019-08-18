@@ -1,7 +1,7 @@
 
 declare module '.Array' { export default Array; }
 declare module '.Array.isArray?=' { export default isArray;
-	function isArray (value :any) :value is any[] | readonly any[];
+	function isArray (value :any) :value is any[] | readonly any[] | Readonly<any[]>;
 }
 declare module '.Array.prototype' { export default Array.prototype; }
 declare module '.Array.prototype.push' { export default Array.prototype.push; }
@@ -30,7 +30,10 @@ declare module '.Object' { export default Object;
 	};
 }
 declare module '.Object.assign' { export default Object.assign; }
-declare module '.Object.create?=' { export default Object.create; }
+declare module '.Object.create?=' { export default create;
+	function create (proto :null) :object;
+	function create<T extends object> (proto :T) :object & { [K in keyof P] :P[K] };
+}
 declare module '.Object.defineProperty' { export default Object.defineProperty; }
 declare module '.Object.freeze' { export default Object.freeze; }
 declare module '.Object.getOwnPropertyNames?=' { export default getOwnPropertyNames;
@@ -42,7 +45,9 @@ declare module '.Object.prototype.propertyIsEnumerable' { export default Object.
 declare module '.Object.prototype.toString' { export default Object.prototype.toString; }
 declare module '.Object.seal' { export default Object.seal; }
 
-declare module '.Reflect.apply?=' { export default Reflect.apply; }
+declare module '.Reflect.apply?=' { export default apply;
+	function apply<Target extends (this :any, ...args :any) => any, This extends any, Args extends any[]> (target :Target, thisArg :This, args :Readonly<Args>) :Target extends (this :This, ...args :Args) => infer R ? R : never;
+}
 declare module '.Reflect.ownKeys?=' { export default ownKeys;
 	function ownKeys<T extends object> (object :T) :Extract<string | symbol, keyof T>[];
 }

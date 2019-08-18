@@ -2,14 +2,14 @@
  * 模块名称：j-validator
  * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
    　　　　　API validating util. Belong to "Plan J".
- * 模块版本：3.0.0
+ * 模块版本：3.1.0
  * 许可条款：LGPL-3.0
  * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
  * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
  * 项目主页：https://GitHub.com/LongTengDao/j-validator/
  */
 
-var version = '3.0.0';
+var version = '3.1.0';
 
 var toString = Object.prototype.toString;
 
@@ -323,8 +323,8 @@ function symbol (value     )          { return typeof value==='symbol'; }
 function symbol_ (value     )          { return typeof value!=='symbol'; }
 function string (value     )          { return typeof value==='string'; }
 function string_ (value     )          { return typeof value!=='string'; }
-function boolean (value     )          { return typeof value==='boolean'; }
-function boolean_ (value     )          { return typeof value!=='boolean'; }
+function boolean (value     )          { return value===true || value===false; }
+function boolean_ (value     )          { return value!==true && value!==false; }
 function number (value     )          { return typeof value==='number'; }
 function number_ (value     )          { return typeof value!=='number'; }
 function undefined$1 (value     )          { return value===UNDEFINED; }

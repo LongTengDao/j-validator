@@ -2,7 +2,7 @@ export as namespace Validator;
 export = exports;
 declare const exports :Readonly<{
 	
-	version :'3.1.0',
+	version :'3.2.0',
 	
 	is (type :any) :Validator,
 	is<T> (type :any) :TypedValidator<T>,

@@ -2,14 +2,14 @@
  * 模块名称：j-validator
  * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
    　　　　　API validating util. Belong to "Plan J".
- * 模块版本：3.1.0
+ * 模块版本：3.2.0
  * 许可条款：LGPL-3.0
  * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
  * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
  * 项目主页：https://GitHub.com/LongTengDao/j-validator/
  */
 
-var version = '3.1.0';
+var version = '3.2.0';
 
 var toString = Object.prototype.toString;
 
@@ -363,7 +363,7 @@ function ObjectValidator                   (type   , strict         , FALSE     
 	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
 	var expectKeys = ownKeys(type).reverse();
 	var expectLength         = expectKeys.length;
-	var validators                                  = create(null);
+	var validators = create(null)                                   ;
 	for ( var index         = expectLength; index; ) {
 		var key = expectKeys[--index];
 		validators[key] = is(type[key]);
@@ -510,8 +510,8 @@ var comma_repeat                            = ''.repeat
 			return commas.join(',');
 		};
 	}();
-function overload                                    (types       , callback   )    { return /*#__PURE__*/ Overloaded.apply(null, arguments       )     ; }
-function Overloaded                                    (types       , callback   )    {
+function overload                                                                        (types   , callback   ) { return /*#__PURE__*/ Overloaded.apply(null, arguments                       ); }
+function Overloaded                                             (types                 , callback   ) {
 	var validator            = is(types);
 	if ( typeof callback!=='function' ) { throw TypeError('Validator.overload(,callback!function)'); }
 	var validators             ;
@@ -534,14 +534,14 @@ function Overloaded                                    (types       , callback  
 		}
 		length = validators.length;
 	}
-	return function overloaded (         )                {
+	return function overloaded (         ) {
 		if ( validator(arguments) ) { return apply(callback, this, arguments); }
 		for ( var index         = 0; index<length; ++index ) {
 			if ( validators[index](arguments) ) { return apply(callbacks[index], this, arguments); }
 		}
 		if ( fallback ) { return apply(fallback, this, arguments); }
 		throw TypeError();
-	}     ;
+	};
 }
 var _export = Default({
 	is: is, not: not,

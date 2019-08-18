@@ -65,7 +65,7 @@ function ObjectValidator<T extends object> (type :T, strict :boolean, FALSE :boo
 	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
 	var expectKeys = ownKeys(type).reverse();
 	var expectLength :number = expectKeys.length;
-	var validators :{ [key in keyof T] :Validator } = create(null);
+	var validators = create(null) as { [key in keyof T] :Validator };
 	for ( var index :number = expectLength; index; ) {
 		var key = expectKeys[--index];
 		validators[key] = is(type[key]);
@@ -212,14 +212,14 @@ var comma_repeat :(count :number) => string = ''.repeat
 			return commas.join(',');
 		};
 	}();
-export function overload<T extends (...args :any[]) => any> (types :any[], callback :T) :T { return /*#__PURE__*/ Overloaded.apply(null, arguments as any) as T; }
-function Overloaded<T extends (...args :any[]) => any> (types :any[], callback :T) :T {
+export function overload<T extends Readonly<any[]>, F extends (this :any, ...args :any) => any> (types :T, callback :T) { return /*#__PURE__*/ Overloaded.apply(null, arguments as unknown as [ T, F ]); }
+function Overloaded<F extends (this :any, ...args :any) => any> (types :Readonly<any[]>, callback :F) {
 	var validator :Validator = is(types);
 	if ( typeof callback!=='function' ) { throw TypeError('Validator.overload(,callback!function)'); }
 	var validators :Validator[];
-	var callbacks :T[];
+	var callbacks :F[];
 	var length :number = arguments.length;
-	var fallback :T;
+	var fallback :F;
 	if ( length%2 ) {
 		fallback = arguments[--length];
 		if ( typeof fallback!=='function' ) { throw TypeError('Validator.overload('+comma_repeat(length)+'fallback!function)'); }
@@ -230,20 +230,20 @@ function Overloaded<T extends (...args :any[]) => any> (types :any[], callback :
 		callbacks = [];
 		for ( var index :number = 2; index<length; ++index ) {
 			validators.push(ArrayValidator(arguments[index], true, false));
-			var cb :T = arguments[++index];
+			var cb :F = arguments[++index];
 			if ( typeof cb!=='function' ) { throw TypeError('Validator.overload('+comma_repeat(index)+'callback!function)'); }
 			callbacks.push(cb);
 		}
 		length = validators.length;
 	}
-	return function overloaded (this :any) :ReturnType<T> {
+	return function overloaded (this :any) {
 		if ( validator(arguments) ) { return apply(callback, this, arguments); }
 		for ( var index :number = 0; index<length; ++index ) {
 			if ( validators[index](arguments) ) { return apply(callbacks[index], this, arguments); }
 		}
 		if ( fallback ) { return apply(fallback, this, arguments); }
 		throw TypeError();
-	} as T;
+	};
 }
 
 import Default from '.default?=';

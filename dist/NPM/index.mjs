@@ -2,14 +2,14 @@
  * 模块名称：j-validator
  * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
    　　　　　API validating util. Belong to "Plan J".
- * 模块版本：4.0.0
+ * 模块版本：4.1.0
  * 许可条款：LGPL-3.0
  * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
  * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
  * 项目主页：https://GitHub.com/LongTengDao/j-validator/
  */
 
-var version = '4.0.0';
+var version = '4.1.0';
 
 var toString = Object.prototype.toString;
 
@@ -357,16 +357,24 @@ var _O_            = Object_is
 	? function _O_ (value     )          { return !Object_is (value, -0); }
 	: function _O_ (value     )          { return value!==0 || 1/value>0; };
 
-function Test (type        , TRUE         )                   {
+function Test (type        , strict         , TRUE         )                   {
 	try {
 		TEST.call(type, '');
-		return TRUE
-			? function test (value     )          {
-				return TEST.call(type, value);
-			}
-			: function test (value     )          {
-				return !TEST.call(type, value);
-			};
+		return strict
+			? TRUE
+				? function test (value     )          {
+					return typeof value==='string' && TEST.call(type, value);
+				}
+				: function test (value     )          {
+					return typeof value!=='string' || !TEST.call(type, value);
+				}
+			: TRUE
+				? function test (value     )          {
+					return TEST.call(type, value);
+				}
+				: function test (value     )          {
+					return !TEST.call(type, value);
+				};
 	}
 	catch (error) {}
 }
@@ -404,7 +412,7 @@ function ObjectValidator                   (type   , strict         , FALSE     
 		};
 }
 
-function ArrayValidator (type       , like         , FALSE         )            {
+function ArrayValidator (type                 , like         , FALSE         )            {
 	var length         = type.length;
 	var validators              = [];
 	for ( var index         = 0; index<length; ++index ) { validators.push(is(type[index])); }
@@ -432,7 +440,7 @@ function is (type     )            {
 		undefined$1(type) ? undefined$1 :
 			TRUE(type) ? TRUE : FALSE(type) ? FALSE :
 				NULL(type) ? NULL :
-					typeof type==='object' ? /*#__PURE__*/ Test(type, true) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, false) :
+					typeof type==='object' ? /*#__PURE__*/ isArray(type) ? ArrayValidator(type, false, false) : /*#__PURE__*/ Test(type, false, true) || ObjectValidator(type, false, false) :
 						O(type) ? O : _O(type) ? _O :
 							type!==type ? NaN :
 								type===INFINITY ? Infinity : type===_INFINITY ? _Infinity :
@@ -461,7 +469,7 @@ function not (type     )            {
 	return type===UNDEFINED ? undefined_ :
 		type===true ? TRUE_ : type===false ? FALSE_ :
 			type===null ? NULL_ :
-				typeof type==='object' ? /*#__PURE__*/ Test(type, false) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, true) :
+				typeof type==='object' ? isArray(type) ? /*#__PURE__*/ ArrayValidator(type, false, true) : /*#__PURE__*/ Test(type, false, false) || /*#__PURE__*/ ObjectValidator(type, false, true) :
 					type===0 ? O_(type) ? _O_ : O_ :
 						type!==type ? NaN_ :
 							type===INFINITY ? Infinity_ : type===_INFINITY ? _Infinity_ :
@@ -469,10 +477,10 @@ function not (type     )            {
 }
 
 function strict (type        )            {
-	return /*#__PURE__*/ ObjectValidator(type, true, false);
+	return /*#__PURE__*/ Test(type, true, true) || /*#__PURE__*/ ObjectValidator(type, true, false);
 }
 strict.not = function strict_not (type        )            {
-	return /*#__PURE__*/ ObjectValidator(type, true, true);
+	return /*#__PURE__*/ Test(type, true, false) || /*#__PURE__*/ ObjectValidator(type, true, true);
 };
 
 function optional (type     )            {

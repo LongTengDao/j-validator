@@ -63,16 +63,24 @@ var _O_ :Validator = Object_is
 	? function _O_ (value :any) :boolean { return !Object_is!(value, -0); }
 	: function _O_ (value :any) :boolean { return value!==0 || 1/value>0; };
 
-function Test (type :RegExp, TRUE :boolean) :Validator | void {
+function Test (type :object, strict :boolean, TRUE :boolean) :Validator | void {
 	try {
 		TEST.call(type, '');
-		return TRUE
-			? function test (value :any) :boolean {
-				return TEST.call(type, value);
-			}
-			: function test (value :any) :boolean {
-				return !TEST.call(type, value);
-			};
+		return strict
+			? TRUE
+				? function test (value :any) :boolean {
+					return typeof value==='string' && TEST.call(type, value);
+				}
+				: function test (value :any) :boolean {
+					return typeof value!=='string' || !TEST.call(type, value);
+				}
+			: TRUE
+				? function test (value :any) :boolean {
+					return TEST.call(type, value);
+				}
+				: function test (value :any) :boolean {
+					return !TEST.call(type, value);
+				};
 	}
 	catch (error) {}
 }
@@ -110,7 +118,7 @@ function ObjectValidator<T extends object> (type :T, strict :boolean, FALSE :boo
 		};
 }
 
-function ArrayValidator (type :any[], like :boolean, FALSE :boolean) :Validator {
+function ArrayValidator (type :Readonly<any[]>, like :boolean, FALSE :boolean) :Validator {
 	var length :number = type.length;
 	var validators :Validator[] = [];
 	for ( var index :number = 0; index<length; ++index ) { validators.push(is(type[index])); }
@@ -138,7 +146,7 @@ export function is (type :any) :Validator {
 		undefined(type) ? undefined :
 			TRUE(type) ? TRUE : FALSE(type) ? FALSE :
 				NULL(type) ? NULL :
-					typeof type==='object' ? /*#__PURE__*/ Test(type, true) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, false) :
+					typeof type==='object' ? /*#__PURE__*/ isArray(type) ? ArrayValidator(type, false, false) : /*#__PURE__*/ Test(type, false, true) || ObjectValidator(type, false, false) :
 						O(type) ? O : _O(type) ? _O :
 							type!==type ? NaN :
 								type===INFINITY ? Infinity : type===_INFINITY ? _Infinity :
@@ -167,7 +175,7 @@ export function not (type :any) :Validator {
 	return type===UNDEFINED ? undefined_ :
 		type===true ? TRUE_ : type===false ? FALSE_ :
 			type===null ? NULL_ :
-				typeof type==='object' ? /*#__PURE__*/ Test(type, false) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, true) :
+				typeof type==='object' ? isArray(type) ? /*#__PURE__*/ ArrayValidator(type, false, true) : /*#__PURE__*/ Test(type, false, false) || /*#__PURE__*/ ObjectValidator(type, false, true) :
 					type===0 ? O_(type) ? _O_ : O_ :
 						type!==type ? NaN_ :
 							type===INFINITY ? Infinity_ : type===_INFINITY ? _Infinity_ :
@@ -175,11 +183,11 @@ export function not (type :any) :Validator {
 }
 
 export function strict (type :object) :Validator {
-	return /*#__PURE__*/ ObjectValidator(type, true, false);
+	return /*#__PURE__*/ Test(type, true, true) || /*#__PURE__*/ ObjectValidator(type, true, false);
 }
 strict.not = function strict_not (type :object) :Validator {
-	return /*#__PURE__*/ ObjectValidator(type, true, true);
-}
+	return /*#__PURE__*/ Test(type, true, false) || /*#__PURE__*/ ObjectValidator(type, true, true);
+};
 
 export function optional (type :any) :Validator {
 	var validator :Validator = is(type);

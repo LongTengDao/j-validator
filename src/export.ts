@@ -9,44 +9,46 @@ import ownKeys from '.Reflect.ownKeys?=';
 import apply from '.Reflect.apply?=';
 import TypeError from '.TypeError';
 import UNDEFINED from '.undefined';
+import TEST from '.RegExp.prototype.test';
 
 var Object_is = ( Object as { is? (a :any, b :any) :boolean } ).is;
 var _INFINITY = -INFINITY;
 
-function VOID (value :any) :boolean { return value===VOID; }
+var VOID = { 'void': function (value :any) :boolean { return value===VOID; } }['void'];
 export { VOID as void };
 
 export function any (value :any) :boolean { return value!==VOID; }
 export function never (value :any) :boolean { return false; }
 
 export function bigint (value :any) :boolean { return typeof value==='bigint'; }
-function bigint_ (value :any) :boolean { return typeof value!=='bigint'; }
+var bigint_ = { '!bigint': function (value :any) :boolean { return typeof value!=='bigint'; } }['!bigint'];
 export function symbol (value :any) :boolean { return typeof value==='symbol'; }
-function symbol_ (value :any) :boolean { return typeof value!=='symbol'; }
+var symbol_ = { '!symbol': function (value :any) :boolean { return typeof value!=='symbol'; } }['!symbol'];
 export function string (value :any) :boolean { return typeof value==='string'; }
-function string_ (value :any) :boolean { return typeof value!=='string'; }
-export function boolean (value :any) :boolean { return value===true || value===false; }
-function boolean_ (value :any) :boolean { return value!==true && value!==false; }
+var string_ = { '!string': function (value :any) :boolean { return typeof value!=='string'; } }['!string'];
+var BOOLEAN = { 'boolean': function (value :any) :boolean { return value===true || value===false; } }['boolean'];
+export { BOOLEAN as boolean };
+var boolean_ = { '!boolean': function (value :any) :boolean { return value!==true && value!==false; } }['!boolean'];
 export function number (value :any) :boolean { return typeof value==='number'; }
-function number_ (value :any) :boolean { return typeof value!=='number'; }
+var number_ = { '!number': function (value :any) :boolean { return typeof value!=='number'; } }['!number'];
 export function undefined (value :any) :boolean { return value===UNDEFINED; }
-function undefined_ (value :any) :boolean { return value!==UNDEFINED; }
+var undefined_ = { '!undefined': function (value :any) :boolean { return value!==UNDEFINED; } }['!undefined'];
 
-function NULL (value :any) :boolean { return value===null; }
-function NULL_ (value :any) :boolean { return value!==null; }
-function TRUE (value :any) :boolean { return value===true; }
-function TRUE_ (value :any) :boolean { return value!==true; }
-function FALSE (value :any) :boolean { return value===false; }
-function FALSE_ (value :any) :boolean { return value!==false; }
+var NULL = { 'null': function (value :any) :boolean { return value===null; } }['null'];
+var NULL_ = { '!null': function (value :any) :boolean { return value!==null; } }['!null'];
+var TRUE = { 'true': function (value :any) :boolean { return value===true; } }['true'];
+var TRUE_ = { '!true': function (value :any) :boolean { return value!==true; } }['!true'];
+var FALSE = { 'false': function (value :any) :boolean { return value===false; } }['false'];
+var FALSE_ = { '!false': function (value :any) :boolean { return value!==false; } }['!false'];
 
 export function Infinity (value :any) :boolean { return value===INFINITY; }
 Infinity.valueOf = function (this :typeof Infinity) :number { return INFINITY; };
-function Infinity_ (value :any) :boolean { return value!==INFINITY; }
-function _Infinity (value :any) :boolean { return value===_INFINITY; }
-function _Infinity_ (value :any) :boolean { return value!==_INFINITY; }
+var Infinity_ = { '!Infinity': function (value :any) :boolean { return value!==INFINITY; } }['!Infinity'];
+var _Infinity = { '-Infinity': function (value :any) :boolean { return value===_INFINITY; } }['-Infinity'];
+var _Infinity_ = { '!-Infinity': function (value :any) :boolean { return value!==_INFINITY; } }['!-Infinity'];
 
 export function NaN (value :any) :boolean { return value!==value; }
-function NaN_ (value :any) :boolean { return value===value; }
+var NaN_ = { '!NaN': function (value :any) :boolean { return value===value; } }['!NaN'];
 
 var O :Validator = Object_is
 	? function O (value :any) :boolean { return Object_is!(value, 0); }
@@ -60,6 +62,20 @@ var _O :Validator = Object_is
 var _O_ :Validator = Object_is
 	? function _O_ (value :any) :boolean { return !Object_is!(value, -0); }
 	: function _O_ (value :any) :boolean { return value!==0 || 1/value>0; };
+
+function Test (type :RegExp, TRUE :boolean) :Validator | void {
+	try {
+		TEST.call(type, '');
+		return TRUE
+			? function test (value :any) :boolean {
+				return TEST.call(type, value);
+			}
+			: function test (value :any) :boolean {
+				return !TEST.call(type, value);
+			};
+	}
+	catch (error) {}
+}
 
 function ObjectValidator<T extends object> (type :T, strict :boolean, FALSE :boolean) :Validator {
 	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
@@ -122,7 +138,7 @@ export function is (type :any) :Validator {
 		undefined(type) ? undefined :
 			TRUE(type) ? TRUE : FALSE(type) ? FALSE :
 				NULL(type) ? NULL :
-					typeof type==='object' ? /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, false) :
+					typeof type==='object' ? /*#__PURE__*/ Test(type, true) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, false) :
 						O(type) ? O : _O(type) ? _O :
 							type!==type ? NaN :
 								type===INFINITY ? Infinity : type===_INFINITY ? _Infinity :
@@ -137,7 +153,7 @@ export function not (type :any) :Validator {
 				return symbol_;
 			case string:
 				return string_;
-			case boolean:
+			case BOOLEAN:
 				return boolean_;
 			case number:
 				return number_;
@@ -151,15 +167,15 @@ export function not (type :any) :Validator {
 	return type===UNDEFINED ? undefined_ :
 		type===true ? TRUE_ : type===false ? FALSE_ :
 			type===null ? NULL_ :
-				typeof type==='object' ? /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, true) :
+				typeof type==='object' ? /*#__PURE__*/ Test(type, false) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, true) :
 					type===0 ? O_(type) ? _O_ : O_ :
 						type!==type ? NaN_ :
 							type===INFINITY ? Infinity_ : type===_INFINITY ? _Infinity_ :
 								function notType (value :any) :boolean { return value!==type; };
 }
 
-export function strict (type :object, not :boolean) :Validator {
-	return /*#__PURE__*/ ObjectValidator(type, true, not || false);
+export function strict (type :object, not? :boolean) :Validator {
+	return /*#__PURE__*/ ObjectValidator(type, true, !!not);
 }
 
 export function optional (type :any) :Validator {
@@ -250,7 +266,7 @@ import Default from '.default?=';
 export default Default({
 	is: is, not: not,
 	and: and, or: or,
-	bigint: bigint, symbol: symbol, string: string, boolean: boolean, number: number,
+	bigint: bigint, symbol: symbol, string: string, 'boolean': BOOLEAN, number: number,
 	undefined: undefined, NaN: NaN, Infinity: Infinity,
 	every: every,
 	'void': VOID, optional: optional, strict: strict,

@@ -12,8 +12,10 @@ declare module '.Infinity' { export default Infinity; }
 
 declare module '.Math.floor' { export default Math.floor; }
 
-declare module '.Object' { export default Object;
-	const Object :{		<T extends object> (value :T) :T;
+declare module '.Object' { export default O;
+	type O = Object;
+	const O :typeof Object & {
+		<T extends object> (value :T) :T;
 		(value? :undefined | null) :object;
 		(value :boolean) :Boolean & object;
 		(value :number) :Number & object;
@@ -29,13 +31,10 @@ declare module '.Object' { export default Object;
 		new (value :bigint) :BigInt & object;
 	};
 }
-declare module '.Object.assign' { export default Object.assign; }
 declare module '.Object.create?=' { export default create;
 	function create (proto :null) :object;
 	function create<P extends object> (proto :P) :object & { [K in keyof P] :P[K] };
 }
-declare module '.Object.defineProperty' { export default Object.defineProperty; }
-declare module '.Object.freeze' { export default Object.freeze; }
 declare module '.Object.getOwnPropertyNames?=' { export default getOwnPropertyNames;
 	function getOwnPropertyNames<T extends object> (object :T) :Extract<string, keyof T>[];
 }
@@ -43,7 +42,6 @@ declare module '.Object.prototype' { export default Object.prototype; }
 declare module '.Object.prototype.hasOwnProperty' { export default Object.prototype.hasOwnProperty; }
 declare module '.Object.prototype.propertyIsEnumerable' { export default Object.prototype.propertyIsEnumerable; }
 declare module '.Object.prototype.toString' { export default Object.prototype.toString; }
-declare module '.Object.seal' { export default Object.seal; }
 
 declare module '.Reflect.apply?=' { export default apply;
 	function apply<This extends any, Args extends { length :number, [index :number] :any }, Target extends (this :This, ...args :Args & any[]) => any> (target :Target, thisArg :This, args :Readonly<Args>) :Target extends (this :This, ...args :Args & any[]) => infer R ? R : never;
@@ -51,6 +49,8 @@ declare module '.Reflect.apply?=' { export default apply;
 declare module '.Reflect.ownKeys?=' { export default ownKeys;
 	function ownKeys<T extends object> (object :T) :Extract<string | symbol, keyof T>[];
 }
+
+declare module '.RegExp.prototype.test' { export default RegExp.prototype.test; }
 
 declare module '.String.fromCharCode' { export default String.fromCharCode; }
 

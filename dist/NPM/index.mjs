@@ -2,14 +2,14 @@
  * 模块名称：j-validator
  * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
    　　　　　API validating util. Belong to "Plan J".
- * 模块版本：3.2.0
+ * 模块版本：3.3.0
  * 许可条款：LGPL-3.0
  * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
  * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
  * 项目主页：https://GitHub.com/LongTengDao/j-validator/
  */
 
-var version = '3.2.0';
+var version = '3.3.0';
 
 var toString = Object.prototype.toString;
 
@@ -270,16 +270,14 @@ var apply = typeof Reflect==='object' ? Reflect.apply : (
 	/*¡ j-globals: Reflect.apply (polyfill) */
 );
 
-var assign = Object.assign;
+var TEST = RegExp.prototype.test;
 
 var toStringTag = typeof Symbol!=='undefined' ? Symbol.toStringTag : undefined;
 
+var assign = Object.assign;
 var defineProperty = Object.defineProperty;
-
 var freeze = Object.freeze;
-
 var seal = Object.seal;
-
 var Default = (
 	/*! j-globals: default (internal) */
 	function Default (exports, addOnOrigin) {
@@ -312,39 +310,39 @@ var Default = (
 var Object_is = ( Object                                      ).is;
 var _INFINITY = -INFINITY;
 
-function VOID (value     )          { return value===VOID; }
+var VOID = { 'void': function (value     )          { return value===VOID; } }['void'];
 
 function any (value     )          { return value!==VOID; }
 function never (value     )          { return false; }
 
 function bigint (value     )          { return typeof value==='bigint'; }
-function bigint_ (value     )          { return typeof value!=='bigint'; }
+var bigint_ = { '!bigint': function (value     )          { return typeof value!=='bigint'; } }['!bigint'];
 function symbol (value     )          { return typeof value==='symbol'; }
-function symbol_ (value     )          { return typeof value!=='symbol'; }
+var symbol_ = { '!symbol': function (value     )          { return typeof value!=='symbol'; } }['!symbol'];
 function string (value     )          { return typeof value==='string'; }
-function string_ (value     )          { return typeof value!=='string'; }
-function boolean (value     )          { return value===true || value===false; }
-function boolean_ (value     )          { return value!==true && value!==false; }
+var string_ = { '!string': function (value     )          { return typeof value!=='string'; } }['!string'];
+var BOOLEAN = { 'boolean': function (value     )          { return value===true || value===false; } }['boolean'];
+var boolean_ = { '!boolean': function (value     )          { return value!==true && value!==false; } }['!boolean'];
 function number (value     )          { return typeof value==='number'; }
-function number_ (value     )          { return typeof value!=='number'; }
+var number_ = { '!number': function (value     )          { return typeof value!=='number'; } }['!number'];
 function undefined$1 (value     )          { return value===UNDEFINED; }
-function undefined_ (value     )          { return value!==UNDEFINED; }
+var undefined_ = { '!undefined': function (value     )          { return value!==UNDEFINED; } }['!undefined'];
 
-function NULL (value     )          { return value===null; }
-function NULL_ (value     )          { return value!==null; }
-function TRUE (value     )          { return value===true; }
-function TRUE_ (value     )          { return value!==true; }
-function FALSE (value     )          { return value===false; }
-function FALSE_ (value     )          { return value!==false; }
+var NULL = { 'null': function (value     )          { return value===null; } }['null'];
+var NULL_ = { '!null': function (value     )          { return value!==null; } }['!null'];
+var TRUE = { 'true': function (value     )          { return value===true; } }['true'];
+var TRUE_ = { '!true': function (value     )          { return value!==true; } }['!true'];
+var FALSE = { 'false': function (value     )          { return value===false; } }['false'];
+var FALSE_ = { '!false': function (value     )          { return value!==false; } }['!false'];
 
 function Infinity (value     )          { return value===INFINITY; }
 Infinity.valueOf = function (                     )         { return INFINITY; };
-function Infinity_ (value     )          { return value!==INFINITY; }
-function _Infinity (value     )          { return value===_INFINITY; }
-function _Infinity_ (value     )          { return value!==_INFINITY; }
+var Infinity_ = { '!Infinity': function (value     )          { return value!==INFINITY; } }['!Infinity'];
+var _Infinity = { '-Infinity': function (value     )          { return value===_INFINITY; } }['-Infinity'];
+var _Infinity_ = { '!-Infinity': function (value     )          { return value!==_INFINITY; } }['!-Infinity'];
 
 function NaN (value     )          { return value!==value; }
-function NaN_ (value     )          { return value===value; }
+var NaN_ = { '!NaN': function (value     )          { return value===value; } }['!NaN'];
 
 var O            = Object_is
 	? function O (value     )          { return Object_is (value, 0); }
@@ -358,6 +356,20 @@ var _O            = Object_is
 var _O_            = Object_is
 	? function _O_ (value     )          { return !Object_is (value, -0); }
 	: function _O_ (value     )          { return value!==0 || 1/value>0; };
+
+function Test (type        , TRUE         )                   {
+	try {
+		TEST.call(type, '');
+		return TRUE
+			? function test (value     )          {
+				return TEST.call(type, value);
+			}
+			: function test (value     )          {
+				return !TEST.call(type, value);
+			};
+	}
+	catch (error) {}
+}
 
 function ObjectValidator                   (type   , strict         , FALSE         )            {
 	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
@@ -420,7 +432,7 @@ function is (type     )            {
 		undefined$1(type) ? undefined$1 :
 			TRUE(type) ? TRUE : FALSE(type) ? FALSE :
 				NULL(type) ? NULL :
-					typeof type==='object' ? /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, false) :
+					typeof type==='object' ? /*#__PURE__*/ Test(type, true) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, false) :
 						O(type) ? O : _O(type) ? _O :
 							type!==type ? NaN :
 								type===INFINITY ? Infinity : type===_INFINITY ? _Infinity :
@@ -435,7 +447,7 @@ function not (type     )            {
 				return symbol_;
 			case string:
 				return string_;
-			case boolean:
+			case BOOLEAN:
 				return boolean_;
 			case number:
 				return number_;
@@ -449,15 +461,15 @@ function not (type     )            {
 	return type===UNDEFINED ? undefined_ :
 		type===true ? TRUE_ : type===false ? FALSE_ :
 			type===null ? NULL_ :
-				typeof type==='object' ? /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, true) :
+				typeof type==='object' ? /*#__PURE__*/ Test(type, false) || /*#__PURE__*/ ( isArray(type) ? ArrayValidator : ObjectValidator )(type, false, true) :
 					type===0 ? O_(type) ? _O_ : O_ :
 						type!==type ? NaN_ :
 							type===INFINITY ? Infinity_ : type===_INFINITY ? _Infinity_ :
 								function notType (value     )          { return value!==type; };
 }
 
-function strict (type        , not         )            {
-	return /*#__PURE__*/ ObjectValidator(type, true, not || false);
+function strict (type        , not          )            {
+	return /*#__PURE__*/ ObjectValidator(type, true, !!not);
 }
 
 function optional (type     )            {
@@ -546,7 +558,7 @@ function Overloaded                                             (types          
 var _export = Default({
 	is: is, not: not,
 	and: and, or: or,
-	bigint: bigint, symbol: symbol, string: string, boolean: boolean, number: number,
+	bigint: bigint, symbol: symbol, string: string, 'boolean': BOOLEAN, number: number,
 	undefined: undefined$1, NaN: NaN, Infinity: Infinity,
 	every: every,
 	'void': VOID, optional: optional, strict: strict,
@@ -556,7 +568,7 @@ var _export = Default({
 });
 
 export default _export;
-export { Infinity, NaN, and, any, bigint, boolean, every, is, never, not, number, optional, or, overload, strict, string, symbol, undefined$1 as undefined, version, VOID as void };
+export { Infinity, NaN, and, any, bigint, BOOLEAN as boolean, every, is, never, not, number, optional, or, overload, strict, string, symbol, undefined$1 as undefined, version, VOID as void };
 
 /*¡ j-validator */
 

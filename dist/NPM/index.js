@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-var version = '3.3.0';
+var version = '4.0.0';
 
 var toString = Object.prototype.toString;
 
@@ -459,9 +459,12 @@ function not (type     )            {
 								function notType (value     )          { return value!==type; };
 }
 
-function strict (type        , not          )            {
-	return /*#__PURE__*/ ObjectValidator(type, true, !!not);
+function strict (type        )            {
+	return /*#__PURE__*/ ObjectValidator(type, true, false);
 }
+strict.not = function strict_not (type        )            {
+	return /*#__PURE__*/ ObjectValidator(type, true, true);
+};
 
 function optional (type     )            {
 	var validator            = is(type);

@@ -174,8 +174,11 @@ export function not (type :any) :Validator {
 								function notType (value :any) :boolean { return value!==type; };
 }
 
-export function strict (type :object, not? :boolean) :Validator {
-	return /*#__PURE__*/ ObjectValidator(type, true, !!not);
+export function strict (type :object) :Validator {
+	return /*#__PURE__*/ ObjectValidator(type, true, false);
+}
+strict.not = function strict_not (type :object) :Validator {
+	return /*#__PURE__*/ ObjectValidator(type, true, true);
 }
 
 export function optional (type :any) :Validator {

@@ -10,9 +10,14 @@ export function or<T> (...types :any[]) :TypedValidator<T>;
 export function and (...types :any[]) :Validator;
 export function and<T> (...types :any[]) :TypedValidator<T>;
 
-export function strict (type :object, not? :boolean) :Validator;
-export function strict<T extends object> (type :object, not? :false) :TypedValidator<T>;
-export function strict<T extends object> (type :object, not :true) :TypedValidator<Exclude<any, T>>;
+export const strict :{
+	(type :object) :Validator
+	<T extends object> (type :object) :TypedValidator<T>
+	readonly not :{
+		(type :object) :Validator
+		<T extends object> (type :object) :TypedValidator<Exclude<any, T>>
+	}
+};
 export function optional (type :any) :Validator;
 export function optional<T> (type :any) :TypedValidator<T>;
 export { VOID as void }; declare function VOID (value :any) :boolean;

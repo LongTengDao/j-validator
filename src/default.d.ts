@@ -8,9 +8,13 @@ declare const exports :Readonly<{
 	not (type :any) :Validator,
 	not<T> (type :any) :TypedValidator<Exclude<any, T>>,
 	
+	or (types :any[]) :Validator,
 	or (...types :any[]) :Validator,
+	or<T> (types :any[]) :TypedValidator<T>,
 	or<T> (...types :any[]) :TypedValidator<T>,
+	and (types :any[]) :Validator,
 	and (...types :any[]) :Validator,
+	and<T> (types :any[]) :TypedValidator<T>,
 	and<T> (...types :any[]) :TypedValidator<T>,
 	
 	strict :{

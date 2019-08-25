@@ -32,8 +32,7 @@ declare module '.Object' { export default O;
 	};
 }
 declare module '.Object.create?=' { export default create;
-	function create (proto :null) :object;
-	function create<P extends object> (proto :P) :object & { [K in keyof P] :P[K] };
+	function create<P extends object | null> (proto :P) :P extends object ? object & { [K in keyof P] :P[K] } : object;
 }
 declare module '.Object.getOwnPropertyNames?=' { export default getOwnPropertyNames;
 	function getOwnPropertyNames<T extends object> (object :T) :Extract<string, keyof T>[];
@@ -69,5 +68,9 @@ declare module '.default?=' { export default Default;
 }
 
 declare module '.native' { export default _; const _ :never; }
+
+declare module '.null.prototype' { export default NULL;
+	const NULL :object | null;
+}
 
 declare module '.undefined' { export default undefined; }

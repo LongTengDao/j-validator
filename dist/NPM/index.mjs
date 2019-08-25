@@ -2,14 +2,14 @@
  * 模块名称：j-validator
  * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
    　　　　　API validating util. Belong to "Plan J".
- * 模块版本：4.1.0
+ * 模块版本：4.2.0
  * 许可条款：LGPL-3.0
  * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
  * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
  * 项目主页：https://GitHub.com/LongTengDao/j-validator/
  */
 
-var version = '4.1.0';
+var version = '4.2.0';
 
 var toString = Object.prototype.toString;
 
@@ -78,7 +78,15 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var propertyIsEnumerable = Object.prototype.propertyIsEnumerable;
 
-var MAX_ARRAY_LENGTH =       4294967295;// 0x00000000FFFFFFFF // 0b00000000000000000000011111111111111111111111111111111 // 0o0000000000037777777777 // 2**32-1
+var Null_prototype = (
+	/*! j-globals: null.prototype (internal) */
+	Object.create
+		? /*#__PURE__*/ Object.preventExtensions(Object.create(null))
+		: null
+	/*¡ j-globals: null.prototype (internal) */
+);
+
+var MAX_ARRAY_LENGTH = /*  */4294967295;// 0x00000000FFFFFFFF // 0b00000000000000000000011111111111111111111111111111111 // 0o0000000000037777777777 // 2**32-1
 var LIKE_ARRAY_INDEX = /^(?:0|[1-4]\d{0,9}|[5-9]\d{0,8})$/;
 function isArrayIndex (key) {
 	return LIKE_ARRAY_INDEX.test(key) && key<MAX_ARRAY_LENGTH;
@@ -383,7 +391,7 @@ function ObjectValidator                   (type   , strict         , FALSE     
 	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
 	var expectKeys = ownKeys(type).reverse();
 	var expectLength         = expectKeys.length;
-	var validators = create(null)                                   ;
+	var validators = create(Null_prototype)                                   ;
 	for ( var index         = expectLength; index; ) {
 		var key = expectKeys[--index];
 		validators[key] = is(type[key]);

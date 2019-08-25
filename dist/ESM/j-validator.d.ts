@@ -1,13 +1,17 @@
-export const version :'4.1.0';
+export const version :'4.2.0';
 
 export function is (type :any) :Validator;
 export function is<T> (type :any) :TypedValidator<T>;
 export function not (type :any) :Validator;
 export function not<T> (type :any) :TypedValidator<Exclude<any, T>>;
 
+export function or (types :any[]) :Validator;
 export function or (...types :any[]) :Validator;
+export function or<T> (types :any[]) :TypedValidator<T>;
 export function or<T> (...types :any[]) :TypedValidator<T>;
+export function and (types :any[]) :Validator;
 export function and (...types :any[]) :Validator;
+export function and<T> (types :any[]) :TypedValidator<T>;
 export function and<T> (...types :any[]) :TypedValidator<T>;
 
 export const strict :{

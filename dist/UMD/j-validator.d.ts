@@ -2,16 +2,20 @@ export as namespace Validator;
 export = exports;
 declare const exports :Readonly<{
 	
-	version :'4.1.0',
+	version :'4.2.0',
 	
 	is (type :any) :Validator,
 	is<T> (type :any) :TypedValidator<T>,
 	not (type :any) :Validator,
 	not<T> (type :any) :TypedValidator<Exclude<any, T>>,
 	
+	or (types :any[]) :Validator,
 	or (...types :any[]) :Validator,
+	or<T> (types :any[]) :TypedValidator<T>,
 	or<T> (...types :any[]) :TypedValidator<T>,
+	and (types :any[]) :Validator,
 	and (...types :any[]) :Validator,
+	and<T> (types :any[]) :TypedValidator<T>,
 	and<T> (...types :any[]) :TypedValidator<T>,
 	
 	strict :{

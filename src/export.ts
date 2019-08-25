@@ -10,6 +10,7 @@ import apply from '.Reflect.apply?=';
 import TypeError from '.TypeError';
 import UNDEFINED from '.undefined';
 import TEST from '.RegExp.prototype.test';
+import Null_prototype from '.null.prototype';
 
 var Object_is = ( Object as { is? (a :any, b :any) :boolean } ).is;
 var _INFINITY = -INFINITY;
@@ -89,7 +90,7 @@ function ObjectValidator<T extends object> (type :T, strict :boolean, FALSE :boo
 	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
 	var expectKeys = ownKeys(type).reverse();
 	var expectLength :number = expectKeys.length;
-	var validators = create(null) as { [key in keyof T] :Validator };
+	var validators = create(Null_prototype) as { [key in keyof T] :Validator };
 	for ( var index :number = expectLength; index; ) {
 		var key = expectKeys[--index];
 		validators[key] = is(type[key]);

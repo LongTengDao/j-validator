@@ -45,7 +45,7 @@ declare const exports :Readonly<{
 	any (value :any) :boolean,
 	never (value :any) :false,
 	
-	overload<T extends (...args :any[]) => any> (types :any[], callback :T, ...rest :( any[] | T )[]) :T,
+	overload<Args extends Readonly<any[]>, Callback extends (this :any, ...args :Args) => any> (types1 :Args, callback1 :Callback, types2 :Args, callback2 :Callback, ...rest :( Args | Callback )[]) :Callback,
 	
 	default :typeof exports,
 	

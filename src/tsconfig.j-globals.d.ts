@@ -1,12 +1,10 @@
 
 declare module '.Array' { export default Array; }
 declare module '.Array.isArray?=' { export default isArray;
-	function isArray (value :any) :value is any[] | Readonly<any[]>;
+	function isArray (value :any) :value is readonly any[];
 }
 declare module '.Array.prototype' { export default Array.prototype; }
 declare module '.Array.prototype.push' { export default Array.prototype.push; }
-
-declare module '.Function.prototype.apply' { export default Function.prototype.apply; }
 
 declare module '.Infinity' { export default Infinity; }
 
@@ -14,7 +12,7 @@ declare module '.Math.floor' { export default Math.floor; }
 
 declare module '.Object' { export default O;
 	type O = Object;
-	const O :typeof Object & {
+	const O :{
 		<T extends object> (value :T) :T;
 		(value? :undefined | null) :object;
 		(value :boolean) :Boolean & object;
@@ -29,6 +27,8 @@ declare module '.Object' { export default O;
 		new (value :string) :String & object;
 		new (value :symbol) :Symbol & object;
 		new (value :bigint) :BigInt & object;
+	} & {
+		readonly [Method in keyof typeof Object] :typeof Object[Method];
 	};
 }
 declare module '.Object.create?=' { export default create;
@@ -42,9 +42,6 @@ declare module '.Object.prototype.hasOwnProperty' { export default Object.protot
 declare module '.Object.prototype.propertyIsEnumerable' { export default Object.prototype.propertyIsEnumerable; }
 declare module '.Object.prototype.toString' { export default Object.prototype.toString; }
 
-declare module '.Reflect.apply?=' { export default apply;
-	function apply<This extends any, Args extends { length :number, [index :number] :any }, Target extends (this :This, ...args :Args & any[]) => any> (target :Target, thisArg :This, args :Readonly<Args>) :Target extends (this :This, ...args :Args & any[]) => infer R ? R : never;
-}
 declare module '.Reflect.ownKeys?=' { export default ownKeys;
 	function ownKeys<T extends object> (object :T) :Extract<string | symbol, keyof T>[];
 }
@@ -57,6 +54,13 @@ declare module '.Symbol.species?' { export default Symbol.species; }
 declare module '.Symbol.toStringTag?' { export default Symbol.toStringTag; }
 
 declare module '.TypeError' { export default TypeError; }
+
+declare module '.class.isPrimitive' { export default isPrimitive;
+	function isPrimitive (value :any) :value is undefined | null | boolean | string | symbol | number | bigint;
+}
+declare module '.class.isRegExp' { export default isRegExp;
+	function isRegExp (value :any) :value is RegExp;
+}
 
 declare module '.default?=' { export default Default;
 	function Default<Exports extends Readonly<{ [key :string] :any, default? :Module<Exports> }>> (exports :Exports) :Module<Exports>;
@@ -74,3 +78,7 @@ declare module '.null.prototype' { export default NULL;
 }
 
 declare module '.undefined' { export default undefined; }
+
+declare module '.void.KEEP' { export default KEEP;
+	function KEEP (...args :any[]) :void;
+}

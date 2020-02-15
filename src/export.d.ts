@@ -42,8 +42,6 @@ export function NaN (value :any) :boolean;
 export function any (value :any) :boolean;
 export function never (value :any) :false;
 
-export function overload<T extends (...args :any[]) => any> (types :any[], callback :T, ...rest :( any[] | T )[]) :T;
-
 export default exports;
 declare const exports :Readonly<{
 	version :typeof version,
@@ -64,7 +62,6 @@ declare const exports :Readonly<{
 	NaN :typeof NaN,
 	any :typeof any,
 	never :typeof never,
-	overload :typeof overload,
 	default :typeof exports,
 }>;
 

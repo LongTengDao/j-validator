@@ -6,10 +6,10 @@ import Object from '.Object';
 import INFINITY from '.Infinity';
 import create from '.Object.create?=';
 import ownKeys from '.Reflect.ownKeys?=';
-import apply from '.Reflect.apply?=';
 import TypeError from '.TypeError';
 import UNDEFINED from '.undefined';
-import TEST from '.RegExp.prototype.test';
+import test from '.RegExp.prototype.test';
+import isRegExp from '.class.isRegExp';
 import Null_prototype from '.null.prototype';
 
 var Object_is = ( Object as { is? (a :any, b :any) :boolean } ).is;
@@ -64,30 +64,17 @@ var _O_ :Validator = Object_is
 	? function _O_ (value :any) :boolean { return !Object_is!(value, -0); }
 	: function _O_ (value :any) :boolean { return value!==0 || 1/value>0; };
 
-function Test (type :object, strict :boolean, TRUE :boolean) :Validator | void {
-	try {
-		TEST.call(type, '');
-		return strict
-			? TRUE
-				? function test (value :any) :boolean {
-					return typeof value==='string' && TEST.call(type, value);
-				}
-				: function test (value :any) :boolean {
-					return typeof value!=='string' || !TEST.call(type, value);
-				}
-			: TRUE
-				? function test (value :any) :boolean {
-					return TEST.call(type, value);
-				}
-				: function test (value :any) :boolean {
-					return !TEST.call(type, value);
-				};
-	}
-	catch (error) {}
+function StringTester (type :object, strict :boolean, TRUE :boolean) :Validator {
+	return strict
+		? TRUE
+			? function tester (value :any) :boolean { return typeof value==='string' && test.call(type, value); }
+			: function tester (value :any) :boolean { return typeof value!=='string' || !test.call(type, value); }
+		: TRUE
+			? function tester (value :any) :boolean { return test.call(type, value); }
+			: function tester (value :any) :boolean { return !test.call(type, value); };
 }
 
 function ObjectValidator<T extends object> (type :T, strict :boolean, FALSE :boolean) :Validator {
-	if ( strict && isArray(type) ) { throw TypeError('Validator.strict(type!object)'); }
 	var expectKeys = ownKeys(type).reverse();
 	var expectLength :number = expectKeys.length;
 	var validators = create(Null_prototype) as { [key in keyof T] :Validator };
@@ -96,27 +83,20 @@ function ObjectValidator<T extends object> (type :T, strict :boolean, FALSE :boo
 		validators[key] = is(type[key]);
 	}
 	var TRUE :boolean = !FALSE;
-	return strict
-		? function object (value :any) :boolean {
-			if ( typeof value!=='object' || !value || isArray(value) ) { return FALSE; }
-			var index :number = 0;
+	return function object (value :any) :boolean {
+		if ( typeof value!=='object' || !value || isArray(value) ) { return FALSE; }
+		for ( var index :number = expectLength; index; ) {
+			var key = expectKeys[--index];
+			if ( !validators[key](key in value ? value[key] : VOID) ) { return FALSE; }
+		}
+		if ( strict ) {
+			index = 0;
 			for ( var keys = ownKeys(value), length :number = keys.length; index<length; ++index ) {
 				if ( !( keys[index] in validators ) ) { return FALSE; }
 			}
-			for ( index = expectLength; index; ) {
-				var key = expectKeys[--index];
-				if ( !validators[key](key in value ? value[key] : VOID) ) { return FALSE; }
-			}
-			return TRUE;
 		}
-		: function object (value :any) :boolean {
-			if ( typeof value!=='object' || !value || isArray(value) ) { return FALSE; }
-			for ( var index :number = expectLength; index; ) {
-				var key = expectKeys[--index];
-				if ( !validators[key](key in value ? value[key] : VOID) ) { return FALSE; }
-			}
-			return TRUE;
-		};
+		return TRUE;
+	};
 }
 
 function ArrayValidator (type :Readonly<any[]>, like :boolean, FALSE :boolean) :Validator {
@@ -124,22 +104,14 @@ function ArrayValidator (type :Readonly<any[]>, like :boolean, FALSE :boolean) :
 	var validators :Validator[] = [];
 	for ( var index :number = 0; index<length; ++index ) { validators.push(is(type[index])); }
 	var TRUE :boolean = !FALSE;
-	return like
-		? function arrayLike (value :any) :boolean {
-			if ( value.length!==length ) { return FALSE; }
-			for ( var index :number = 0; index<length; ++index ) {
-				if ( !validators[index](value[index]) ) { return FALSE; }
-			}
-			return TRUE;
+	return function array (value :any) :boolean {
+		if ( !like && !isArray(value) ) { return FALSE; }
+		if ( value.length!==length ) { return FALSE; }
+		for ( var index :number = 0; index<length; ++index ) {
+			if ( !validators[index](value[index]) ) { return FALSE; }
 		}
-		: function array (value :any) :boolean {
-			if ( !isArray(value) ) { return FALSE; }
-			if ( value.length!==length ) { return FALSE; }
-			for ( var index :number = 0; index<length; ++index ) {
-				if ( !validators[index](value[index]) ) { return FALSE; }
-			}
-			return TRUE;
-		};
+		return TRUE;
+	};
 }
 
 export function is (type :any) :Validator {
@@ -147,7 +119,10 @@ export function is (type :any) :Validator {
 		undefined(type) ? undefined :
 			TRUE(type) ? TRUE : FALSE(type) ? FALSE :
 				NULL(type) ? NULL :
-					typeof type==='object' ? /*#__PURE__*/ isArray(type) ? ArrayValidator(type, false, false) : /*#__PURE__*/ Test(type, false, true) || ObjectValidator(type, false, false) :
+					typeof type==='object' ?
+						/*#__PURE__*/ isArray(type) ? ArrayValidator(type, false, false) :
+						isRegExp(type) ? /*#__PURE__*/ StringTester(type, false, true) :
+							ObjectValidator(type, false, false) :
 						O(type) ? O : _O(type) ? _O :
 							type!==type ? NaN :
 								type===INFINITY ? Infinity : type===_INFINITY ? _Infinity :
@@ -176,7 +151,10 @@ export function not (type :any) :Validator {
 	return type===UNDEFINED ? undefined_ :
 		type===true ? TRUE_ : type===false ? FALSE_ :
 			type===null ? NULL_ :
-				typeof type==='object' ? isArray(type) ? /*#__PURE__*/ ArrayValidator(type, false, true) : /*#__PURE__*/ Test(type, false, false) || /*#__PURE__*/ ObjectValidator(type, false, true) :
+				typeof type==='object' ?
+					isArray(type) ? /*#__PURE__*/ ArrayValidator(type, false, true) :
+						isRegExp(type) ? /*#__PURE__*/ StringTester(type, false, false) :
+							/*#__PURE__*/ ObjectValidator(type, false, true) :
 					type===0 ? O_(type) ? _O_ : O_ :
 						type!==type ? NaN_ :
 							type===INFINITY ? Infinity_ : type===_INFINITY ? _Infinity_ :
@@ -184,10 +162,14 @@ export function not (type :any) :Validator {
 }
 
 export function strict (type :object) :Validator {
-	return /*#__PURE__*/ Test(type, true, true) || /*#__PURE__*/ ObjectValidator(type, true, false);
+	if ( isRegExp(type) ) { return /*#__PURE__*/ StringTester(type, true, true); }
+	if ( isArray(type) ) { throw TypeError('strict(argument can not be an array)'); }
+	return /*#__PURE__*/ ObjectValidator(type, true, false);
 }
 strict.not = function strict_not (type :object) :Validator {
-	return /*#__PURE__*/ Test(type, true, false) || /*#__PURE__*/ ObjectValidator(type, true, true);
+	if ( isRegExp(type) ) { return /*#__PURE__*/ StringTester(type, true, false); }
+	if ( isArray(type) ) { throw TypeError('strict.not(argument can not be an array)'); }
+	return /*#__PURE__*/ ObjectValidator(type, true, true);
 };
 
 export function optional (type :any) :Validator {
@@ -231,49 +213,6 @@ export function every (type :any) :Validator {
 	};
 }
 
-var comma_repeat :(count :number) => string = ''.repeat
-	? function comma_repeat (count :number) :string { return ','.repeat(count); }
-	: function () {
-		var commas :string[] = [];
-		return function comma_repeat (count :number) :string {
-			commas.length = count+1;
-			return commas.join(',');
-		};
-	}();
-export function overload<T extends Readonly<any[]>, F extends (this :any, ...args :any) => any> (types :T, callback :T) { return /*#__PURE__*/ Overloaded.apply(null, arguments as unknown as [ T, F ]); }
-function Overloaded<F extends (this :any, ...args :any) => any> (types :Readonly<any[]>, callback :F) {
-	var validator :Validator = is(types);
-	if ( typeof callback!=='function' ) { throw TypeError('Validator.overload(,callback!function)'); }
-	var validators :Validator[];
-	var callbacks :F[];
-	var length :number = arguments.length;
-	var fallback :F;
-	if ( length%2 ) {
-		fallback = arguments[--length];
-		if ( typeof fallback!=='function' ) { throw TypeError('Validator.overload('+comma_repeat(length)+'fallback!function)'); }
-	}
-	if ( length<3 ) { length = 0; }
-	else {
-		validators = [];
-		callbacks = [];
-		for ( var index :number = 2; index<length; ++index ) {
-			validators.push(ArrayValidator(arguments[index], true, false));
-			var cb :F = arguments[++index];
-			if ( typeof cb!=='function' ) { throw TypeError('Validator.overload('+comma_repeat(index)+'callback!function)'); }
-			callbacks.push(cb);
-		}
-		length = validators.length;
-	}
-	return function overloaded (this :any) {
-		if ( validator(arguments) ) { return apply(callback, this, arguments); }
-		for ( var index :number = 0; index<length; ++index ) {
-			if ( validators[index](arguments) ) { return apply(callbacks[index], this, arguments); }
-		}
-		if ( fallback ) { return apply(fallback, this, arguments); }
-		throw TypeError();
-	};
-}
-
 import Default from '.default?=';
 export default Default({
 	is: is, not: not,
@@ -283,7 +222,6 @@ export default Default({
 	every: every,
 	'void': VOID, optional: optional, strict: strict,
 	any: any, never: never,
-	overload: overload,
 	version: version
 });
 

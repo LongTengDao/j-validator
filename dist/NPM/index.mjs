@@ -1,31 +1,22 @@
-﻿/*!
- * 模块名称：j-validator
- * 模块功能：API 验证相关共享实用程序。从属于“简计划”。
-   　　　　　API validating util. Belong to "Plan J".
- * 模块版本：5.0.0
- * 许可条款：LGPL-3.0
- * 所属作者：龙腾道 <LongTengDao@LongTengDao.com> (www.LongTengDao.com)
- * 问题反馈：https://GitHub.com/LongTengDao/j-validator/issues
- * 项目主页：https://GitHub.com/LongTengDao/j-validator/
- */
+﻿var version = '6.0.0';
 
-var version = '5.0.0';
+var TypeError$1 = TypeError;
 
-var toString = Object.prototype.toString;
+var SyntaxError$1 = SyntaxError;
 
-var isArray = (
-	/*! j-globals: Array.isArray (polyfill) */
-	Array.isArray || function isArray (value) {
-		return /*#__PURE__*/ toString.call(value)==='[object Array]';
-	}
-	/*¡ j-globals: Array.isArray (polyfill) */
-);
+var RegExp$1 = RegExp;
 
-var INFINITY = 1/0;
+var test = RegExp.prototype.test;
+
+var bind = Function.prototype.bind;
+
+var Object_is = Object.is;
 
 var UNDEFINED = void 0;
 
-var create = Object.create || (
+var Object$1 = Object;
+
+var create = Object$1.create || (
 	/*! j-globals: Object.create (polyfill) */
 	/*#__PURE__*/ function () {
 		var NULL;
@@ -61,7 +52,7 @@ var create = Object.create || (
 		function __PURE__ (o, properties) {
 			if ( properties!==UNDEFINED ) { throw TypeError('CAN NOT defineProperties in ES 3 Object.create polyfill'); }
 			if ( o===null ) { return new Null; }
-			if ( typeof o!=='object' && typeof o!=='function' ) { throw TypeError('Object prototype may only be an Object or null: '+o); }
+			if ( Object$1(o)!==o ) { throw TypeError('Object prototype may only be an Object or null: '+o); }
 			constructor.prototype = o;
 			var created = new constructor;
 			constructor.prototype = NULL;
@@ -74,14 +65,26 @@ var create = Object.create || (
 	/*¡ j-globals: Object.create (polyfill) */
 );
 
+var toString = Object.prototype.toString;
+
+var isArray = (
+	/*! j-globals: Array.isArray (polyfill) */
+	Array.isArray || function isArray (value) {
+		return /*#__PURE__*/ toString.apply(value)==='[object Array]';
+	}
+	/*¡ j-globals: Array.isArray (polyfill) */
+);
+
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var propertyIsEnumerable = Object.prototype.propertyIsEnumerable;
 
+var INFINITY = 1/0;
+
 var Null_prototype = (
 	/*! j-globals: null.prototype (internal) */
-	Object.create
-		? /*#__PURE__*/ Object.preventExtensions(Object.create(null))
+	Object.seal
+		? /*#__PURE__*/Object.preventExtensions(Object.create(null))
 		: null
 	/*¡ j-globals: null.prototype (internal) */
 );
@@ -89,11 +92,16 @@ var Null_prototype = (
 var isPrimitive = (
 	/*! j-globals: class.isPrimitive (internal) */
 	function isPrimitive (argument) {
-		return Object(argument)!==argument;
+		return Object$1(argument)!==argument;
 	}
 	/*¡ j-globals: class.isPrimitive (internal) */
 );
 
+var Function_prototype_apply = Function.prototype.apply;
+
+var hasOwn = hasOwnProperty.bind
+	? /*#__PURE__*/hasOwnProperty.call.bind(hasOwnProperty)
+	: function (object, key) { return /*#__PURE__*/hasOwnProperty.call(object, key); };// && object!=null
 var MAX_ARRAY_LENGTH = /*  */4294967295;// 0x00000000FFFFFFFF // 0b00000000000000000000011111111111111111111111111111111 // 0o0000000000037777777777 // 2**32-1
 var LIKE_ARRAY_INDEX = /^(?:0|[1-4]\d{0,9}|[5-9]\d{0,8})$/;
 function isArrayIndex (key) {
@@ -104,7 +112,7 @@ var getOwnPropertyNames = (
 	/*! j-globals: Object.getOwnPropertyNames (polyfill) */
 	/*#__PURE__*/ function () {
 		
-		var Object_getOwnPropertyNames = Object.getOwnPropertyNames;
+		var Object_getOwnPropertyNames = Object$1.getOwnPropertyNames;
 		if ( Object_getOwnPropertyNames ) {
 			try {
 				Object_getOwnPropertyNames(0);
@@ -112,7 +120,7 @@ var getOwnPropertyNames = (
 			}
 			catch (error) { }
 			return function getOwnPropertyNames (object) {
-				return Object_getOwnPropertyNames(object==null ? object : Object(object));
+				return Object_getOwnPropertyNames(object==null ? object : Object$1(object));
 			};
 		}
 		
@@ -140,11 +148,11 @@ var getOwnPropertyNames = (
 				
 				case 'object':
 					if ( hasOwnProperty.call(object, 'length') && !propertyIsEnumerable.call(object, 'length') ) {
-						if ( toString.call(object)==='[object Array]' ) {
+						if ( toString.apply(object)==='[object Array]' ) {
 							for ( name in object ) { if ( hasOwnProperty.call(object, name) && isArrayIndex(name) ) { names[index++] = name; } }
 						}
 						else {
-							if ( string_noIndex && toString.call(object)==='[object String]' ) { throw TypeError('stringObject\'s index keys have bug in ES3'); }
+							if ( string_noIndex && toString.apply(object)==='[object String]' ) { throw TypeError('stringObject\'s index keys have bug in ES3'); }
 							for ( length = object.length; index<length; ++index ) { if ( hasOwnProperty.call(object, index) ) { names[index] = ''+index; } }
 							for ( name in object ) { if ( hasOwnProperty.call(object, name) && isArrayIndex(name) && name>=length ) { names[index++] = name; } }
 							if ( hasOwnProperty.call(object, 'callee') && !propertyIsEnumerable.call(object, 'callee') ) { names[index++] = 'callee'; }
@@ -171,7 +179,7 @@ var getOwnPropertyNames = (
 				//	for ( length = object.length; index<length; ++index ) { names[index] = ''+index; }
 				//	return names;
 				default:
-					for ( name in object = Object(object) ) { if ( hasOwnProperty.call(object, name) ) { names[index++] = name; } }
+					for ( name in object = Object$1(object) ) { if ( hasOwnProperty.call(object, name) ) { names[index++] = name; } }
 					break;
 			}
 			
@@ -197,6 +205,8 @@ var getOwnPropertyNames = (
 	/*¡ j-globals: Object.getOwnPropertyNames (polyfill) */
 );
 
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+
 var push = Array.prototype.push;
 
 var ownKeys = typeof Reflect==='object' ? Reflect.ownKeys : (
@@ -205,16 +215,14 @@ var ownKeys = typeof Reflect==='object' ? Reflect.ownKeys : (
 		
 		var __PURE__;
 		
-		var Object_getOwnPropertySymbols = Object.getOwnPropertySymbols;
-		
 		var Object_getOwnPropertyNames = Object.getOwnPropertyNames;
 		if ( Object_getOwnPropertyNames ) {
 			try { Object_getOwnPropertyNames(0); }
 			catch (error) {
-				if ( Object_getOwnPropertySymbols ) {
+				if ( getOwnPropertySymbols ) {
 					__PURE__ = function ownKeys (object) {
 						var keys = Object_getOwnPropertyNames(object);
-						push.apply(keys, Object_getOwnPropertySymbols);
+						push.apply(keys, getOwnPropertySymbols);
 						return keys;
 					};
 				}
@@ -224,11 +232,11 @@ var ownKeys = typeof Reflect==='object' ? Reflect.ownKeys : (
 		else { Object_getOwnPropertyNames = getOwnPropertyNames; }
 		
 		if ( !__PURE__ ) {
-			__PURE__ = Object_getOwnPropertySymbols
+			__PURE__ = getOwnPropertySymbols
 				? function ownKeys (object) {
 					if ( isPrimitive(object) ) { throw TypeError('Reflect.ownKeys called on non-object'); }
 					var keys = Object_getOwnPropertyNames(object);
-					push.apply(keys, Object_getOwnPropertySymbols);
+					push.apply(keys, getOwnPropertySymbols);
 					return keys;
 				}
 				: function ownKeys (object) {
@@ -245,61 +253,60 @@ var ownKeys = typeof Reflect==='object' ? Reflect.ownKeys : (
 	/*¡ j-globals: Reflect.ownKeys (polyfill) */
 );
 
-var test = RegExp.prototype.test;
-
-var throwStackOverflowErrorEarly = (
-	/*! j-globals: void.KEEP (internal) */
-	/*#__PURE__*/ function () {
-		try { return Function('"use strict";return function(){}')(); }
-		catch (error) {}
-		return function KEEP () {};
-	}()
-	/*¡ j-globals: void.KEEP (internal) */
+var apply = typeof Reflect==='object' ? Reflect.apply : (
+	/*! j-globals: Reflect.apply (polyfill) */
+	Function_prototype_apply.bind
+		? /*#__PURE__*/Function_prototype_apply.call.bind(Function_prototype_apply)
+		: function apply (target, thisArg, args) { return Function_prototype_apply.call(target, thisArg, args); }
+	/*¡ j-globals: Reflect.apply (polyfill) */
 );
 
+var ARGS = { length: 1, 0: '' };
 var isRegExp = (
 	/*! j-globals: class.isRegExp (internal) */
-	function () {
-		function __PURE__ (value) {
-			throwStackOverflowErrorEarly();
-			try { test.call(value, ''); }
-			catch (error) { return false; }
-			return true;
-		}
-		return function isRegExp (value) {
-			return /*#__PURE__*/ __PURE__(value);
-		};
-	}()
+	function isRegExp (value) {
+		try { apply(test, value, ARGS); }
+		catch (error) { return false; }
+		return true;
+	}
 	/*¡ j-globals: class.isRegExp (internal) */
 );
 
-var toStringTag = typeof Symbol!=='undefined' ? Symbol.toStringTag : undefined;
+var toStringTag = typeof Symbol==='undefined' ? UNDEFINED : Symbol.toStringTag;
 
 var assign = Object.assign;
-var defineProperty = Object.defineProperty;
+
 var freeze = Object.freeze;
-var seal = Object.seal;
+
+var defineProperty = (
+	/*! j-globals: Object.defineProperty (fallback) */
+	Object.seal && Object.defineProperty
+	/*¡ j-globals: Object.defineProperty (fallback) */
+);
+
 var Default = (
 	/*! j-globals: default (internal) */
 	function Default (exports, addOnOrigin) {
 		return /*#__PURE__*/ function Module (exports, addOnOrigin) {
-			if ( !addOnOrigin ) { addOnOrigin = exports; exports = create(null); }
+			if ( !addOnOrigin ) { addOnOrigin = exports; exports = create(Null_prototype); }
 			if ( assign ) { assign(exports, addOnOrigin); }
 			else {
-				for ( var key in addOnOrigin ) { if ( hasOwnProperty.call(addOnOrigin, key) ) { exports[key] = addOnOrigin[key]; } }
-				if ( !{ 'toString': null }.propertyIsEnumerable('toString') ) {
+				for ( var key in addOnOrigin ) { if ( hasOwn(addOnOrigin, key) ) { exports[key] = addOnOrigin[key]; } }
+				for ( key in { 'toString': null } ) { if ( key==='toString' ) { break; } }
+				if ( key!=='toString' ) {
 					var keys = [ 'constructor', 'propertyIsEnumerable', 'isPrototypeOf', 'hasOwnProperty', 'valueOf', 'toLocaleString', 'toString' ];
-					while ( key = keys.pop() ) { if ( hasOwnProperty.call(addOnOrigin, key) ) { exports[key] = addOnOrigin[key]; } }
+					var index = 7;
+					while ( index-- ) { if ( hasOwn(addOnOrigin, key = keys[index]) ) { exports[key] = addOnOrigin[key]; } }
 				}
 			}
 			exports['default'] = exports;
-			if ( seal ) {
-				typeof exports==='function' && exports.prototype && seal(exports.prototype);
+			if ( freeze ) {
 				if ( toStringTag ) {
-					var descriptor = create(null);
+					var descriptor = create(Null_prototype);
 					descriptor.value = 'Module';
 					defineProperty(exports, toStringTag, descriptor);
 				}
+				typeof exports==='function' && exports.prototype && freeze(exports.prototype);
 				freeze(exports);
 			}
 			return exports;
@@ -308,218 +315,304 @@ var Default = (
 	/*¡ j-globals: default (internal) */
 );
 
-var Object_is = ( Object                                      ).is;
+var test_bind = bind
+	? /*#__PURE__*/ bind.bind(test)                                                                       
+	: function (            re        ) {
+		return function (            string        ) {
+			return test.call(re, string);
+		};
+	};
+
 var _INFINITY = -INFINITY;
 
-var VOID = { 'void': function (value     )          { return value===VOID; } }['void'];
+function any ()          { return true; }
+function never ()          { return false; }
 
-function any (value     )          { return value!==VOID; }
-function never (value     )          { return false; }
+function bigint (value         )          { return typeof value==='bigint'; }
+var bigint_ = { '!bigint': function (value         )          { return typeof value!=='bigint'; } }['!bigint'];
+function symbol (value         )          { return typeof value==='symbol'; }
+var symbol_ = { '!symbol': function (value         )          { return typeof value!=='symbol'; } }['!symbol'];
+function string (value         )          { return typeof value==='string'; }
+var string_ = { '!string': function (value         )          { return typeof value!=='string'; } }['!string'];
+var BOOLEAN = { 'boolean': function (value         )          { return value===true || value===false; } }['boolean'];
+var boolean_ = { '!boolean': function (value         )          { return value!==true && value!==false; } }['!boolean'];
+function number (value         )          { return typeof value==='number'; }
+var number_ = { '!number': function (value         )          { return typeof value!=='number'; } }['!number'];
+function undefined$1 (value         )          { return value===UNDEFINED; }
+var undefined_ = { '!undefined': function (value         )          { return value!==UNDEFINED; } }['!undefined'];
 
-function bigint (value     )          { return typeof value==='bigint'; }
-var bigint_ = { '!bigint': function (value     )          { return typeof value!=='bigint'; } }['!bigint'];
-function symbol (value     )          { return typeof value==='symbol'; }
-var symbol_ = { '!symbol': function (value     )          { return typeof value!=='symbol'; } }['!symbol'];
-function string (value     )          { return typeof value==='string'; }
-var string_ = { '!string': function (value     )          { return typeof value!=='string'; } }['!string'];
-var BOOLEAN = { 'boolean': function (value     )          { return value===true || value===false; } }['boolean'];
-var boolean_ = { '!boolean': function (value     )          { return value!==true && value!==false; } }['!boolean'];
-function number (value     )          { return typeof value==='number'; }
-var number_ = { '!number': function (value     )          { return typeof value!=='number'; } }['!number'];
-function undefined$1 (value     )          { return value===UNDEFINED; }
-var undefined_ = { '!undefined': function (value     )          { return value!==UNDEFINED; } }['!undefined'];
+var NULL = { 'null': function (value         )          { return value===null; } }['null'];
+var NULL_ = { '!null': function (value         )          { return value!==null; } }['!null'];
+var TRUE = { 'true': function (value         )          { return value===true; } }['true'];
+var TRUE_ = { '!true': function (value         )          { return value!==true; } }['!true'];
+var FALSE = { 'false': function (value         )          { return value===false; } }['false'];
+var FALSE_ = { '!false': function (value         )          { return value!==false; } }['!false'];
 
-var NULL = { 'null': function (value     )          { return value===null; } }['null'];
-var NULL_ = { '!null': function (value     )          { return value!==null; } }['!null'];
-var TRUE = { 'true': function (value     )          { return value===true; } }['true'];
-var TRUE_ = { '!true': function (value     )          { return value!==true; } }['!true'];
-var FALSE = { 'false': function (value     )          { return value===false; } }['false'];
-var FALSE_ = { '!false': function (value     )          { return value!==false; } }['!false'];
-
-function Infinity (value     )          { return value===INFINITY; }
+function Infinity (value         )          { return value===INFINITY; }
 Infinity.valueOf = function (                     )         { return INFINITY; };
-var Infinity_ = { '!Infinity': function (value     )          { return value!==INFINITY; } }['!Infinity'];
-var _Infinity = { '-Infinity': function (value     )          { return value===_INFINITY; } }['-Infinity'];
-var _Infinity_ = { '!-Infinity': function (value     )          { return value!==_INFINITY; } }['!-Infinity'];
+var Infinity_ = { '!Infinity': function (value         )          { return value!==INFINITY; } }['!Infinity'];
+var _Infinity = { '-Infinity': function (value         )          { return value===_INFINITY; } }['-Infinity'];
+var _Infinity_ = { '!-Infinity': function (value         )          { return value!==_INFINITY; } }['!-Infinity'];
 
-function NaN (value     )          { return value!==value; }
-var NaN_ = { '!NaN': function (value     )          { return value===value; } }['!NaN'];
+function NaN (value         )          { return value!==value; }
+var NaN_ = { '!NaN': function (value         )          { return value===value; } }['!NaN'];
 
 var O            = Object_is
-	? function O (value     )          { return Object_is (value, 0); }
-	: function O (value     )          { return value===0 && 1/value>0; };
+	? function O (value         )          { return Object_is (value, 0); }
+	: function O (value         )          { return value===0 && 1/value>0; };
 var O_            = Object_is
-	? function O_ (value     )          { return !Object_is (value, 0); }
-	: function O_ (value     )          { return value!==0 || 1/value<0; };
+	? function O_ (value         )          { return !Object_is (value, 0); }
+	: function O_ (value         )          { return value!==0 || 1/value<0; };
 var _O            = Object_is
-	? function _O (value     )          { return Object_is (value, -0); }
-	: function _O (value     )          { return value===0 && 1/value<0; };
+	? function _O (value         )          { return Object_is (value, -0); }
+	: function _O (value         )          { return value===0 && 1/value<0; };
 var _O_            = Object_is
-	? function _O_ (value     )          { return !Object_is (value, -0); }
-	: function _O_ (value     )          { return value!==0 || 1/value>0; };
+	? function _O_ (value         )          { return !Object_is (value, -0); }
+	: function _O_ (value         )          { return value!==0 || 1/value>0; };
 
-function StringTester (type        , strict         , TRUE         )            {
-	return strict
-		? TRUE
-			? function tester (value     )          { return typeof value==='string' && test.call(type, value); }
-			: function tester (value     )          { return typeof value!=='string' || !test.call(type, value); }
-		: TRUE
-			? function tester (value     )          { return test.call(type, value); }
-			: function tester (value     )          { return !test.call(type, value); };
+function StringTester (type        , FALSE         )            {
+	if ( type.global ) { type = RegExp$1(type.source, type.flags ? type.flags.replace('g', '') : ( type.ignoreCase ? 'i' : '' ) + ( type.multiline ? 'm' : '' )); }
+	var type_test = test_bind(type);
+	return FALSE
+		? function tester (value         )          { return typeof value!=='string' || !type_test(value); }
+		: function tester (value         )          { return typeof value==='string' && type_test(value); };
 }
 
-function ObjectValidator                   (type   , strict         , FALSE         )            {
+function OBJECT                   (value         , index        , expectKeys                    , validators                                          )          {
+	if ( typeof value!=='object' || !value ) { return false; }
+	while ( index ) {
+		var key = expectKeys[--index] ;
+		if ( !validators[key](( value      )[key]) ) { return false; }
+	}
+	return true;
+}
+function OBJECT_STRICT                   (value         , index        , expectKeys                    , validators                                          )          {
+	if ( typeof value!=='object' || !value || isArray(value) ) { return false; }
+	while ( index ) {
+		var key = expectKeys[--index] ;
+		if ( !validators[key](( value      )[key]) ) { return false; }
+	}
+	for ( var keys = ownKeys(value), length         = keys.length; index<length; ++index ) {
+		if ( !( keys[index]  in validators ) ) { return false; }
+	}
+	return true;
+}
+function ObjectValidator                   (type   , FALSE         , strict         )            {
 	var expectKeys = ownKeys(type).reverse();
 	var expectLength         = expectKeys.length;
 	var validators = create(Null_prototype)                                   ;
 	for ( var index         = expectLength; index; ) {
-		var key = expectKeys[--index];
+		var key = expectKeys[--index] ;
 		validators[key] = is(type[key]);
 	}
-	var TRUE          = !FALSE;
-	return function object (value     )          {
-		if ( typeof value!=='object' || !value || isArray(value) ) { return FALSE; }
-		for ( var index         = expectLength; index; ) {
-			var key = expectKeys[--index];
-			if ( !validators[key](key in value ? value[key] : VOID) ) { return FALSE; }
-		}
-		if ( strict ) {
-			index = 0;
-			for ( var keys = ownKeys(value), length         = keys.length; index<length; ++index ) {
-				if ( !( keys[index] in validators ) ) { return FALSE; }
-			}
-		}
-		return TRUE;
-	};
+	return strict
+		? FALSE
+			? function object (value         )          { return !OBJECT_STRICT   (value, expectLength, expectKeys, validators); }
+			: function object (value         )          { return OBJECT_STRICT   (value, expectLength, expectKeys, validators); }
+		: FALSE
+			? function object (value         )          { return !OBJECT   (value, expectLength, expectKeys, validators); }
+			: function object (value         )          { return OBJECT   (value, expectLength, expectKeys, validators); };
 }
 
-function ArrayValidator (type                 , like         , FALSE         )            {
+function ARRAY (value         , length        , validators                      )          {
+	if ( !isArray(value) || value.length!==length ) { return false; }
+	for ( var index         = 0; index<length; ++index ) {
+		if ( !validators[index] (value[index]) ) { return false; }
+	}
+	return true;
+}
+function ArrayValidator (type                    , FALSE         )            {
 	var length         = type.length;
 	var validators              = [];
-	for ( var index         = 0; index<length; ++index ) { validators.push(is(type[index])); }
-	var TRUE          = !FALSE;
-	return function array (value     )          {
-		if ( !like && !isArray(value) ) { return FALSE; }
-		if ( value.length!==length ) { return FALSE; }
-		for ( var index         = 0; index<length; ++index ) {
-			if ( !validators[index](value[index]) ) { return FALSE; }
-		}
-		return TRUE;
-	};
+	for ( var index         = 0; index<length; ++index ) { validators[index] = is(type[index]); }
+	return FALSE
+		? function array (value         )          { return !ARRAY(value, length, validators); }
+		: function array (value         )          { return ARRAY(value, length, validators); };
 }
 
-function is (type     )            {
-	return typeof type==='function' ? type :
-		undefined$1(type) ? undefined$1 :
-			TRUE(type) ? TRUE : FALSE(type) ? FALSE :
-				NULL(type) ? NULL :
+function is (type         )            {
+	return typeof type==='function' ? type              :
+		type===UNDEFINED ? undefined$1 :
+			type===true ? TRUE : type===false ? FALSE :
+				type===null ? NULL :
 					typeof type==='object' ?
-						/*#__PURE__*/ isArray(type) ? ArrayValidator(type, false, false) :
-						isRegExp(type) ? /*#__PURE__*/ StringTester(type, false, true) :
-							ObjectValidator(type, false, false) :
+						/*#__PURE__*/ isArray(type) ? ArrayValidator(type, false) :
+						isRegExp(type) ? /*#__PURE__*/ StringTester(type, false) :
+							ObjectValidator(type          , false, false) :
 						O(type) ? O : _O(type) ? _O :
 							type!==type ? NaN :
 								type===INFINITY ? Infinity : type===_INFINITY ? _Infinity :
-									function isType (value     )          { return value===type; };
+									function isType (value         )          { return value===type; };
 }
-function not (type     )            {
+function not (type         )            {
 	if ( typeof type==='function' ) {
 		switch ( type ) {
-			case bigint:
-				return bigint_;
-			case symbol:
-				return symbol_;
-			case string:
-				return string_;
-			case BOOLEAN:
-				return boolean_;
-			case number:
-				return number_;
-			case undefined$1:
-				return undefined_;
-			case Infinity:
-				return Infinity_;
+			case undefined$1: return undefined_;
+			case undefined_: return undefined$1;
+			case bigint: return bigint_;
+			case bigint_: return bigint;
+			case string: return string_;
+			case string_: return string;
+			case BOOLEAN: return boolean_;
+			case boolean_: return BOOLEAN;
+			case TRUE: return TRUE_;
+			case TRUE_: return TRUE;
+			case FALSE: return FALSE_;
+			case FALSE_: return FALSE;
+			case NULL: return NULL_;
+			case NULL_: return NULL;
+			case number: return number_;
+			case number_: return number;
+			case Infinity: return Infinity_;
+			case Infinity_: return Infinity;
+			case _Infinity: return _Infinity_;
+			case _Infinity_: return _Infinity;
+			case O: return O_;
+			case O_: return O;
+			case _O: return _O_;
+			case _O_: return _O;
+			case symbol: return symbol_;
+			case symbol_: return symbol;
 		}
-		return function notType (value     )          { return !type(value); };
+		return function notType (value         )          { return !type(value); };
 	}
 	return type===UNDEFINED ? undefined_ :
 		type===true ? TRUE_ : type===false ? FALSE_ :
 			type===null ? NULL_ :
 				typeof type==='object' ?
-					isArray(type) ? /*#__PURE__*/ ArrayValidator(type, false, true) :
-						isRegExp(type) ? /*#__PURE__*/ StringTester(type, false, false) :
-							/*#__PURE__*/ ObjectValidator(type, false, true) :
+					isArray(type) ? /*#__PURE__*/ ArrayValidator(type, true) :
+						isRegExp(type) ? /*#__PURE__*/ StringTester(type, true) :
+							/*#__PURE__*/ ObjectValidator(type          , true, false) :
 					type===0 ? O_(type) ? _O_ : O_ :
 						type!==type ? NaN_ :
 							type===INFINITY ? Infinity_ : type===_INFINITY ? _Infinity_ :
-								function notType (value     )          { return value!==type; };
+								function notType (value         )          { return value!==type; };
 }
 
 function strict (type        )            {
-	if ( isRegExp(type) ) { return /*#__PURE__*/ StringTester(type, true, true); }
-	if ( isArray(type) ) { throw TypeError('strict(argument can not be an array)'); }
-	return /*#__PURE__*/ ObjectValidator(type, true, false);
+	if ( isArray(type) || isRegExp(type) ) { throw TypeError$1('strict(argument can not be an array or regExp)'); }
+	return /*#__PURE__*/ ObjectValidator(type, false, true);
 }
 strict.not = function strict_not (type        )            {
-	if ( isRegExp(type) ) { return /*#__PURE__*/ StringTester(type, true, false); }
-	if ( isArray(type) ) { throw TypeError('strict.not(argument can not be an array)'); }
+	if ( isArray(type) || isRegExp(type) ) { throw TypeError$1('strict.not(argument can not be an array or regExp)'); }
 	return /*#__PURE__*/ ObjectValidator(type, true, true);
 };
 
-function optional (type     )            {
+function optional (type         )            {
 	var validator            = is(type);
-	return function optionalValidator (value     )          { return value===VOID || validator(value); };
+	return function optionalValidator (value         )          { return value===UNDEFINED || validator(value); };
 }
 
-function or (type     )            {
-	var types                                           = arguments.length===1 && isArray(type) ? type : arguments;
-	var length         = types.length;
-	var validators              = [];
-	for ( var index         = 0; index<length; ++index ) { validators.push(is(types[index])); }
-	return function or (value     )          {
-		for ( var index         = 0; index<length; ++index ) {
-			if ( validators[index](value) ) { return true; }
-		}
-		return false;
-	};
+function OR (value         , length        , validators                      )          {
+	for ( var index         = 0; index<length; ++index ) {
+		if ( validators[index] (value) ) { return true; }
+	}
+	return false;
 }
-function and (type     )            {
-	var types                                           = arguments.length===1 && isArray(type) ? type : arguments;
+function or (type         )            {
+	var types                     = arguments.length===1 && isArray(type) ? type : arguments;
 	var length         = types.length;
 	var validators              = [];
-	for ( var index         = 0; index<length; ++index ) { validators.push(is(types[index])); }
-	return function and (value     )          {
-		for ( var index         = 0; index<length; ++index ) {
-			if ( !validators[index](value) ) { return false; }
-		}
-		return true;
-	};
+	for ( var index         = 0; index<length; ++index ) { validators[index] = is(types[index]); }
+	return function or (value         )          { return OR(value, length, validators); };
+}
+function AND (value         , length        , validators                      )          {
+	for ( var index         = 0; index<length; ++index ) {
+		if ( !validators[index] (value) ) { return false; }
+	}
+	return true;
+}
+function and (type         )            {
+	var types                     = arguments.length===1 && isArray(type) ? type : arguments;
+	var length         = types.length;
+	var validators              = [];
+	for ( var index         = 0; index<length; ++index ) { validators[index] = is(types[index]); }
+	return function and (value         )          { return AND(value, length, validators); };
 }
 
-function every (type     )            {
+function EVERY (value         , validator           )          {
+	if ( !isArray(value) ) { return false; }
+	for ( var length         = value.length, index         = 0; index<length; ++index ) {
+		if ( !validator(value[index]) ) { return false; }
+	}
+	return true;
+}
+function every (type         )            {
 	var validator            = is(type);
-	return function array (value     )          {
-		if ( !isArray(value) ) { return false; }
-		for ( var length         = value.length, index         = 0; index<length; ++index ) {
-			if ( !validator(value[index]) ) { return false; }
+	return function array (value         )          { return EVERY(value, validator); };
+}
+
+                                                     
+                                          
+function TUPLE (value         , rootPatterns          )          {
+	if ( !isArray(value) ) { return false; }
+	var patterns                  = rootPatterns;
+	var patternIndex         = patterns.length;
+	var subValue          = value[0];
+	var subIndex         = 0;
+	for ( ; ; ) {
+		var pattern          = patterns[--patternIndex] ;
+		if ( pattern(subValue) ) {
+			patterns = pattern.rest;
+			if ( !patterns ) { return true; }
+			patternIndex = patterns.length;
+			subValue = value[++subIndex];
 		}
-		return true;
-	};
+		else if ( !patternIndex ) { return false; }
+	}
+}
+function unshift_call (array                   , item     )       {
+	var index         = array.length;
+	do { array[index] = array[--index] ; }
+	while ( index );
+	array[0] = item;
+}
+function tuple (template                      ) {
+	var raw                    = template.raw;
+	var length         = arguments.length - 1;
+	if ( !length ) { throw SyntaxError$1('tuple'); }
+	var s         = raw[0] ;
+	var lastIndexAfterLF         = s.lastIndexOf('\n') + 1;
+	if ( !lastIndexAfterLF ) { throw SyntaxError$1('tuple'); }
+	var LEVEL         = s.length - lastIndexAfterLF;
+	var index         = 0;
+	var allPatterns            = [];
+	do { ( allPatterns[index] = is(arguments[++index])            ).rest = null; }
+	while ( index<length );
+	index = 0;
+	var rootPatterns           = [ allPatterns[0]  ];
+	var level         = function callee (patterns          , LEVEL        )         {
+		while ( ++index<length ) {
+			var s         = raw[index] ;
+			var lastIndexAfterLF = s.lastIndexOf('\n') + 1;
+			if ( !lastIndexAfterLF ) { throw SyntaxError$1('tuple'); }
+			var level = s.length - lastIndexAfterLF;
+			if ( level<LEVEL ) { return level; }
+			if ( level===LEVEL ) { unshift_call(patterns, allPatterns[index] ); }
+			else {
+				level = callee(patterns[0] .rest = [ allPatterns[index]  ], level);
+				if ( level<LEVEL ) { return level; }
+				if ( level!==LEVEL ) { throw SyntaxError$1('tuple'); }
+				unshift_call(patterns, allPatterns[index] );
+			}
+		}
+		return -1;
+	}(rootPatterns, LEVEL);
+	if ( 0<=level && level<LEVEL ) { throw SyntaxError$1('tuple'); }
+	return function tuple (value         )          { return TUPLE(value, rootPatterns); };
 }
 var _export = Default({
 	is: is, not: not,
 	and: and, or: or,
 	bigint: bigint, symbol: symbol, string: string, 'boolean': BOOLEAN, number: number,
 	undefined: undefined$1, NaN: NaN, Infinity: Infinity,
-	every: every,
-	'void': VOID, optional: optional, strict: strict,
+	every: every, tuple: tuple,
+	optional: optional, strict: strict,
 	any: any, never: never,
 	version: version
 });
 
 export default _export;
-export { Infinity, NaN, and, any, bigint, BOOLEAN as boolean, every, is, never, not, number, optional, or, strict, string, symbol, undefined$1 as undefined, version, VOID as void };
-
-/*¡ j-validator */
+export { Infinity, NaN, and, any, bigint, BOOLEAN as boolean, every, is, never, not, number, optional, or, strict, string, symbol, tuple, undefined$1 as undefined, version };
 
 //# sourceMappingURL=index.mjs.map

@@ -3,53 +3,53 @@ declare const exports :Readonly<{
 	
 	version :string,
 	
-	is (type :any) :Validator,
-	is<T> (type :any) :TypedValidator<T>,
-	not (type :any) :Validator,
-	not<T> (type :any) :TypedValidator<Exclude<any, T>>,
+	is (type :unknown) :Validator,
+	is<T> (type :unknown) :TypedValidator<T>,
+	not (type :unknown) :Validator,
+	//not<T> (type :unknown) :TypedValidatorX<T>,
 	
-	or (types :any[]) :Validator,
-	or (...types :any[]) :Validator,
-	or<T> (types :any[]) :TypedValidator<T>,
-	or<T> (...types :any[]) :TypedValidator<T>,
-	and (types :any[]) :Validator,
-	and (...types :any[]) :Validator,
-	and<T> (types :any[]) :TypedValidator<T>,
-	and<T> (...types :any[]) :TypedValidator<T>,
+	or (types :readonly unknown[]) :Validator,
+	or (...types :unknown[]) :Validator,
+	or<T> (types :readonly unknown[]) :TypedValidator<T>,
+	or<T> (...types :unknown[]) :TypedValidator<T>,
+	and (types :readonly unknown[]) :Validator,
+	and (...types :unknown[]) :Validator,
+	and<T> (types :readonly unknown[]) :TypedValidator<T>,
+	and<T> (...types :unknown[]) :TypedValidator<T>,
 	
 	strict :{
 		(type :object) :Validator
 		<T extends object> (type :object) :TypedValidator<T>
 		readonly not :{
 			(type :object) :Validator
-			<T extends object> (type :object) :TypedValidator<Exclude<any, T>>
+			//<T extends object> (type :object) :TypedValidatorX<T>
 		}
 	},
-	optional (type :any) :Validator,
-	optional<T> (type :any) :TypedValidator<T>,
-	void (value :any) :boolean,
+	optional (type :unknown) :Validator,
+	optional<T> (type :unknown) :TypedValidator<T>,
 	
-	every (type :any) :Validator,
-	every<T> (type :any) :TypedValidator<T[]>,
+	every (type :unknown) :Validator,
+	every<T> (type :unknown) :TypedValidator<T[]>,
+	tuple (template :TemplateStringsArray, ...types :unknown[]) :Validator,
+	tuple<T extends readonly unknown[]> (template :TemplateStringsArray, ...types :unknown[]) :TypedValidator<T[]>,
 	
-	bigint (value :any) :value is bigint,
-	symbol (value :any) :value is symbol,
-	string (value :any) :value is string,
-	boolean (value :any) :value is boolean,
-	number (value :any) :value is number,
+	symbol (value :unknown) :value is symbol,
+	bigint (value :unknown) :value is bigint,
+	string (value :unknown) :value is string,
+	number (value :unknown) :value is number,
+	boolean (value :unknown) :value is boolean,
 	
-	undefined (value :any) :value is undefined,
-	Infinity (value :any) :boolean,
-	NaN (value :any) :boolean,
+	undefined (value :unknown) :value is undefined,
+	Infinity (value :unknown) :boolean,
+	NaN (value :unknown) :boolean,
 	
-	any (value :any) :boolean,
-	never (value :any) :false,
-	
-	overload<Args extends Readonly<any[]>, Callback extends (this :any, ...args :Args) => any> (types1 :Args, callback1 :Callback, types2 :Args, callback2 :Callback, ...rest :( Args | Callback )[]) :Callback,
+	any (value :unknown) :boolean,
+	never (value :unknown) :false,
 	
 	default :typeof exports,
 	
 }>;
 
-type Validator = (value :any) => boolean;
-type TypedValidator<T> = (value :any) => value is T;
+type Validator = (value :unknown) => boolean;
+type TypedValidator<T> = (value :unknown) => value is T;
+//type TypedValidatorX<T> = (value :unknown) => value is not T;

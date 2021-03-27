@@ -1,46 +1,47 @@
 export const version :string;
 
-export function is (type :any) :Validator;
-export function is<T> (type :any) :TypedValidator<T>;
-export function not (type :any) :Validator;
-export function not<T> (type :any) :TypedValidator<Exclude<any, T>>;
+export function is (type :unknown) :Validator;
+export function is<T> (type :unknown) :TypedValidator<T>;
+export function not (type :unknown) :Validator;
+//export function not<T> (type :unknown) :TypedValidatorX<T>;
 
-export function or (types :any[]) :Validator;
-export function or (...types :any[]) :Validator;
-export function or<T> (types :any[]) :TypedValidator<T>;
-export function or<T> (...types :any[]) :TypedValidator<T>;
-export function and (types :any[]) :Validator;
-export function and (...types :any[]) :Validator;
-export function and<T> (types :any[]) :TypedValidator<T>;
-export function and<T> (...types :any[]) :TypedValidator<T>;
+export function or (types :readonly unknown[]) :Validator;
+export function or (...types :unknown[]) :Validator;
+export function or<T> (types :readonly unknown[]) :TypedValidator<T>;
+export function or<T> (...types :unknown[]) :TypedValidator<T>;
+export function and (types :readonly unknown[]) :Validator;
+export function and (...types :unknown[]) :Validator;
+export function and<T> (types :readonly unknown[]) :TypedValidator<T>;
+export function and<T> (...types :unknown[]) :TypedValidator<T>;
 
 export const strict :{
 	(type :object) :Validator
 	<T extends object> (type :object) :TypedValidator<T>
 	readonly not :{
 		(type :object) :Validator
-		<T extends object> (type :object) :TypedValidator<Exclude<any, T>>
+		//<T extends object> (type :object) :TypedValidatorX<T>
 	}
 };
-export function optional (type :any) :Validator;
-export function optional<T> (type :any) :TypedValidator<T>;
-export { VOID as void }; declare function VOID (value :any) :boolean;
+export function optional (type :unknown) :Validator;
+export function optional<T> (type :unknown) :TypedValidator<T>;
 
-export function every (type :any) :Validator;
-export function every<T> (type :any) :TypedValidator<T[]>;
+export function every (type :unknown) :Validator;
+export function every<T> (type :unknown) :TypedValidator<T[]>;
+export function tuple (template :TemplateStringsArray, ...types :unknown[]) :Validator;
+export function tuple<T extends readonly unknown[]> (template :TemplateStringsArray, ...types :unknown[]) :TypedValidator<T>;
 
-export function bigint (value :any) :value is bigint;
-export function symbol (value :any) :value is symbol;
-export function string (value :any) :value is string;
-export function boolean (value :any) :value is boolean;
-export function number (value :any) :value is number;
+export function symbol (value :unknown) :value is symbol;
+export function bigint (value :unknown) :value is bigint;
+export function string (value :unknown) :value is string;
+export function number (value :unknown) :value is number;
+export function boolean (value :unknown) :value is boolean;
 
-export function undefined (value :any) :value is undefined;
-export function Infinity (value :any) :boolean;
-export function NaN (value :any) :boolean;
+export function undefined (value :unknown) :value is undefined;
+export function Infinity (value :unknown) :boolean;
+export function NaN (value :unknown) :boolean;
 
-export function any (value :any) :boolean;
-export function never (value :any) :false;
+export function any (value :unknown) :true;
+export function never (value :unknown) :false;
 
 export default exports;
 declare const exports :Readonly<{
@@ -50,8 +51,8 @@ declare const exports :Readonly<{
 	and :typeof and,
 	strict :typeof strict,
 	optional :typeof optional,
-	void :typeof VOID,
 	every :typeof every,
+	tuple :typeof tuple,
 	bigint :typeof bigint,
 	symbol :typeof symbol,
 	string :typeof string,
@@ -65,5 +66,6 @@ declare const exports :Readonly<{
 	default :typeof exports,
 }>;
 
-type Validator = (value :any) => boolean;
-type TypedValidator<T> = (value :any) => value is T;
+type Validator = (value :unknown) => boolean;
+type TypedValidator<T> = (value :unknown) => value is T;
+//type TypedValidatorX<T> = (value :unknown) => value is not T;

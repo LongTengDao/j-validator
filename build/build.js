@@ -1,6 +1,6 @@
 'use strict';
 
-require('@ltd/j-dev')(__dirname+'/..')(async ({ build, 龙腾道, get }) => {
+require('@ltd/j-dev')(__dirname + '/..')(async ({ build, 龙腾道, get }) => {
 	
 	const zhs = 'API 验证相关共享实用程序。从属于“简计划”。';
 	const en = 'API validating util. Belong to "Plan J".';
